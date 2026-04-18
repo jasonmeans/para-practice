@@ -5,7 +5,7 @@
 - Vite
 - React
 - TypeScript
-- Dexie for IndexedDB
+- Supabase Auth + Postgres
 - Recharts for trends
 - Vitest + Testing Library for tests
 - ESLint + Prettier
@@ -14,7 +14,7 @@
 
 - Vite gives a clean static build path and simple GitHub Pages deployment.
 - React + TypeScript keeps the UI modular without adding framework complexity.
-- Dexie keeps IndexedDB manageable and testable for attempt/session persistence.
+- Supabase keeps learner history on the backend so saved sessions can resume across browsers and devices.
 - Recharts handles responsive charts with minimal custom chart code.
 - Vitest integrates naturally with Vite and supports fast unit tests.
 
@@ -23,7 +23,9 @@
 - `src/data`: original question bank and static content
 - `src/lib/quiz`: quiz generation, scoring, and adaptive selection logic
 - `src/lib/insights`: performance summaries and recommendations
-- `src/lib/db`: IndexedDB schema and persistence helpers
+- `src/lib/backend`: backend sync, import/export, and record mapping
+- `src/lib/supabase`: client setup
+- `src/lib/theme`: system-synced theme handling
 - `src/components`: reusable UI pieces
 - `src/pages`: route-level screens for home, practice, history, and insights
 
@@ -66,15 +68,16 @@ Attempt fields:
 
 # Persistence Strategy
 
-- Store completed attempts and active sessions in IndexedDB via Dexie.
-- Keep import/export in JSON for portability.
-- Show clear local-only storage messaging in the UI.
-- Support pause/resume by saving the active session after each answer change and timer update checkpoints.
+- Store completed attempts and active sessions in Supabase tables protected with row-level security.
+- Keep import/export in JSON for portability and backups.
+- Require sign-in so history and active sessions can be retrieved on another device.
+- Support pause/resume by syncing the active session after each answer change and timer checkpoint.
 
 # Deployment Strategy
 
 - Use Vite static build output.
 - Configure `base` for GitHub Pages using the repository name in production.
+- Inject Supabase browser credentials at build time through local env vars and GitHub Actions secrets.
 - Add a GitHub Actions workflow that installs dependencies, runs lint/tests/build, uploads the build artifact, and deploys to GitHub Pages on push to `main`.
 
 # Testing Strategy
@@ -83,7 +86,7 @@ Attempt fields:
   - scoring logic
   - quiz randomization and weak-area weighting
   - insight generation
-  - persistence helpers and import/export validation
+  - backend persistence helpers and import/export validation
 - Add light component-level tests only for high-risk behavior if needed.
 
 # Milestone Plan
@@ -97,8 +100,8 @@ Attempt fields:
 
 # Initial Assumptions
 
-- The site should be fully static and browser-only.
+- The frontend should stay static, with backend sync delegated to Supabase.
 - The repository name `para-practice` will be used for GitHub Pages base pathing.
 - A focused but sufficiently varied seed bank is better than a huge low-quality bank.
 - Adaptive behavior will be lightweight: weak domains get higher selection weight rather than a complex mastery engine.
-- Dark mode is optional and should be included only if it stays simple.
+- Lightweight sign-in is acceptable because cross-device resume requires a persistent learner identity.

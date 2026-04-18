@@ -28,8 +28,8 @@ This repository is designed to support Codex and future collaborating agents wor
 
 ## Data/Persistence Engineer
 
-- Owns IndexedDB schema, history import/export, and attempt/session storage rules.
-- Ensures local-only storage messaging is accurate.
+- Owns backend schema, auth-aware data access, history import/export, and attempt/session sync rules.
+- Ensures synced-data messaging is accurate and cross-device resume stays reliable.
 
 ## QA Engineer
 
@@ -59,7 +59,7 @@ This repository is designed to support Codex and future collaborating agents wor
 - `MASTER-EXECUTION.md`, `daily.md`, `COMMS.md`, `IMPLEMENTATION_PLAN.md`: Orchestrator primary owner.
 - `src/components`, `src/pages`, `src/styles`: Frontend Engineer primary owner.
 - `src/lib/quiz`, `src/lib/insights`, `src/data/questions.ts`: Assessment Engine Engineer and Content Curator.
-- `src/lib/db`, `src/lib/storage`: Data/Persistence Engineer.
+- `src/lib/backend`, `src/lib/supabase`: Data/Persistence Engineer.
 - `.github/workflows`, deployment docs: Deployment Engineer.
 - `src/**/*.test.ts*`, config verification: QA Engineer.
 

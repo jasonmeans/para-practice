@@ -1,12 +1,12 @@
 # Product Vision
 
-Create a calm, polished, static ParaPro (1755) study website that helps one learner practice with original questions, track progress locally, and choose next study steps with confidence.
+Create a calm, polished ParaPro (1755) study website that helps one learner practice with original questions, sync progress across devices, and choose next study steps with confidence.
 
 # Goals
 
-- Deliver a complete static practice experience with no backend and no authentication.
+- Deliver a complete practice experience with backend-backed sync for one learner across devices.
 - Provide original mixed tests, section quizzes, and adaptive weak-area study modes.
-- Persist attempts locally and surface trends and actionable study insights.
+- Persist attempts in the backend and surface trends and actionable study insights.
 - Ship automated GitHub Pages deployment with clean CI checks.
 - Maintain repo discipline through explicit plans, ownership, and verification.
 
@@ -56,7 +56,7 @@ Tasks:
 - Add original seed question bank
 - Implement randomized quiz generation
 - Implement scoring and answer review
-- Support pause/resume
+- Support backend-synced pause/resume
 
 Verification:
 
@@ -70,14 +70,14 @@ Status: `completed`
 
 Tasks:
 
-- Add IndexedDB persistence
-- Save attempts and resumable sessions
+- Add backend persistence and sign-in flow
+- Save attempts and resumable sessions server-side
 - Build history drilldown and JSON import/export
 - Build trends and study insights
 
 Verification:
 
-- Attempts persist across reloads
+- Attempts persist across devices after sign-in
 - Trend charts render from stored data
 - Weak-area recommendations update from history
 - Unit tests cover persistence and insights logic
@@ -124,6 +124,6 @@ Mitigation: Seed a sufficiently broad original question bank with balanced tags 
 
 Mitigation: Configure Vite base path intentionally and verify workflow output paths.
 
-## Risk: Local persistence edge cases
+## Risk: Backend setup friction
 
-Mitigation: Isolate persistence helpers and cover them with tests and import/export validation.
+Mitigation: Keep the backend surface small, provide a ready-to-run SQL migration, and document GitHub secrets plus local `.env` requirements clearly.

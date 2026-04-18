@@ -1,14 +1,14 @@
-# ParaPro Practice Studio
+# Dove's ParaPro Practice
 
 ## Overview
 
-ParaPro Practice Studio is a static website for one learner to practice skills commonly associated with the ParaPro (1755) exam. It includes original mixed practice tests, section quizzes, adaptive weak-area review, local history tracking, trend charts, and study insights.
+Dove's ParaPro Practice is a polished study website for one learner preparing for ParaPro (1755). It offers original mixed tests, section quizzes, backend-synced history, cross-device resume, trend charts, and study insights in a calm light/dark experience that follows system settings by default.
 
 This project is an unofficial study aid. It is not affiliated with ETS, does not use official paid test items, and does not predict or claim an official score.
 
 ## Why this project exists
 
-The goal is simple: make it easy to do steady, low-friction practice with original questions, then use local history to decide what to study next.
+The goal is to give one learner a steady, encouraging place to practice, review misses, and pick up right where she left off whether she opens the site on a phone, desktop, or another browser.
 
 ## Copyright and non-affiliation note
 
@@ -22,13 +22,14 @@ The goal is simple: make it easy to do steady, low-friction practice with origin
 - Full mixed practice tests with randomized question order
 - Section quizzes for reading, writing, math, and classroom application
 - Weak-area and missed-questions review modes
-- Pause and resume for an in-progress attempt
+- Backend-synced pause and resume across browsers and devices
 - Detailed results with explanations and recommended focus areas
-- Local attempt history stored in IndexedDB
+- Account-backed history synced through Supabase
 - Score trend and section trend charts
 - Study insights for strongest sections, weakest sections, recurring errors, and momentum
-- JSON export and import for local history
-- Responsive layout with keyboard-friendly controls
+- JSON export and import for backup and restore
+- Responsive phone-friendly practice flow
+- Light and dark themes with system sync and a manual override
 - GitHub Pages deployment via GitHub Actions
 
 ## Architecture
@@ -38,9 +39,9 @@ The goal is simple: make it easy to do steady, low-friction practice with origin
 - Vite
 - React
 - TypeScript
-- Dexie for IndexedDB
-- Recharts for trend charts
-- Vitest for unit tests
+- Supabase Auth + Postgres
+- Recharts
+- Vitest
 - ESLint + Prettier
 
 ### App structure
@@ -49,12 +50,16 @@ The goal is simple: make it easy to do steady, low-friction practice with origin
 - [`src/lib/quiz/engine.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/quiz/engine.ts): quiz generation and adaptive weighting
 - [`src/lib/quiz/scoring.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/quiz/scoring.ts): scoring and result summaries
 - [`src/lib/insights/analyze.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/insights/analyze.ts): long-term study insights
-- [`src/lib/db/historyService.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/db/historyService.ts): local persistence, export, and import
-- [`src/pages`](/Users/jasonmeans/code/personal/para-practice/src/pages): home, practice, history, insights, and results views
+- [`src/lib/backend/historyService.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/backend/historyService.ts): synced attempt/session storage plus import/export
+- [`src/lib/supabase/client.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/supabase/client.ts): backend client setup
+- [`src/lib/theme.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/theme.ts): system-aware theme behavior
+- [`supabase/migrations/20260418_backend_sync.sql`](/Users/jasonmeans/code/personal/para-practice/supabase/migrations/20260418_backend_sync.sql): database schema and RLS policies
 
-### Persistence model
+### Data storage
 
-Completed attempts and the current in-progress session are stored in IndexedDB. Nothing is sent to a backend service. Data stays in the current browser unless exported manually.
+- Attempt history and active sessions live in Supabase tables protected by row-level security.
+- The browser keeps only the auth session and theme preference locally.
+- JSON export/import remains available for backup and restore.
 
 ## Local development
 
@@ -64,13 +69,36 @@ Completed attempts and the current in-progress session are stored in IndexedDB. 
    npm ci
    ```
 
-2. Start the dev server:
+2. Copy the env template:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+3. Create a Supabase project and copy:
+   - Project URL
+   - Publishable key
+
+4. Run the SQL in [`supabase/migrations/20260418_backend_sync.sql`](/Users/jasonmeans/code/personal/para-practice/supabase/migrations/20260418_backend_sync.sql) in the Supabase SQL editor.
+
+5. Put the values into `.env.local`:
+
+   ```bash
+   VITE_SUPABASE_URL=...
+   VITE_SUPABASE_PUBLISHABLE_KEY=...
+   ```
+
+6. In Supabase Auth settings:
+   - add `http://127.0.0.1:4173`
+   - add your GitHub Pages URL
+   - keep email/password auth enabled
+   - configure custom SMTP for production if you want reliable confirmation emails
+
+7. Start the dev server:
 
    ```bash
    npm run dev
    ```
-
-3. Open the local Vite URL shown in the terminal.
 
 ## Testing
 
@@ -92,7 +120,7 @@ The repository includes a GitHub Actions workflow at [`.github/workflows/deploy-
 4. builds the static site
 5. deploys the `dist` folder to GitHub Pages on push to `main`
 
-### Manual GitHub Pages setting
+### Manual GitHub setup
 
 In the repository settings on GitHub:
 
@@ -100,22 +128,27 @@ In the repository settings on GitHub:
 2. Open **Pages**
 3. Set **Source** to **GitHub Actions**
 
-The app uses a GitHub Pages-safe base path and hash routing for static navigation.
+In the repository **Secrets and variables** section, add:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+The app is configured for GitHub Pages-safe base pathing and hash routing.
 
 ## Data storage and privacy
 
-- Attempts are stored only in the current browser on the current device.
-- Clearing browser storage for this site removes the local history.
-- Exporting history creates a JSON file you can keep as a backup.
-- Importing history merges saved attempts back into local storage.
+- Practice history and active sessions are stored in Supabase for the signed-in learner.
+- The browser stores only the auth session and theme preference locally.
+- Exporting history creates a JSON backup.
+- Importing history upserts attempts into the signed-in learner's backend account.
 
 ## Import/export history
 
 Use the History page to:
 
-- export all saved attempts and any active session as JSON
-- import a previous JSON backup
-- clear all local history after confirmation
+- export synced attempts and the current saved session as JSON
+- import a previous JSON backup into the current account
+- clear synced history after confirmation
 
 ## Extending the question bank
 
@@ -134,12 +167,17 @@ Add more records to [`src/data/questions.ts`](/Users/jasonmeans/code/personal/pa
 
 The quiz engine is already structured to use future additions for better variety and adaptive selection.
 
+## Image credits
+
+- Dove in flight: [Ahmed Nishaath on Unsplash](https://unsplash.com/photos/a-white-dove-flies-gracefully-through-a-clear-blue-sky-2EoMV_zj9gQ)
+- Dove portrait: [Liam Shaw on Unsplash](https://unsplash.com/photos/white-dove-xxPXH7azBVs)
+
 ## Roadmap
 
 - Expand the original question bank with more medium and stretch items
-- Add optional printable result summaries
-- Add richer import conflict handling
+- Add richer score review filters
 - Add more nuanced adaptive weighting over longer history windows
+- Add optional account profile details for this single-learner setup
 
 ## Repository operating files
 

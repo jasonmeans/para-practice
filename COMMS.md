@@ -26,3 +26,12 @@ Subject: Pages workflow ready
 Decision or request: Added a GitHub Actions workflow for GitHub Pages that installs dependencies, runs lint, runs tests, builds, uploads `dist`, and deploys on push to `main`. README includes the remaining manual Pages setting.  
 Status: Closed  
 Follow-up needed: Repo owner should confirm Pages source is set to GitHub Actions.
+
+## 2026-04-18 13:41 PT
+
+From: Product Manager  
+To: Orchestrator  
+Subject: Dove personalization and cross-device sync  
+Decision or request: Update the learner experience with Dove-themed visuals, explicit light and dark theme behavior, and backend-backed history so attempts and saved sessions can continue across phone and desktop.  
+Status: Closed  
+Follow-up needed: Repo owner should provision Supabase credentials and run the provided SQL migration.

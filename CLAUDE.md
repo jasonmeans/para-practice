@@ -1,6 +1,6 @@
 # Mission
 
-Build and maintain a production-ready static website that helps one learner practice for the ParaPro (1755) exam as an unofficial study aid. The product must use original practice content, store data locally in the browser, deploy cleanly to GitHub Pages, and avoid claims of ETS affiliation or score equivalence.
+Build and maintain a production-ready website that helps one learner practice for the ParaPro (1755) exam as an unofficial study aid. The product must use original practice content, sync learner history through a backend account, deploy cleanly to GitHub Pages, and avoid claims of ETS affiliation or score equivalence.
 
 # Behavioral Principles
 
@@ -30,20 +30,21 @@ Build and maintain a production-ready static website that helps one learner prac
 
 # Project-Specific Guidelines
 
-- Product scope is a single-user study tool with no authentication and no backend by default.
+- Product scope is a single-learner study tool with lightweight authentication for sync.
 - Content must be original and inspired only by public skill-domain descriptions.
 - Do not scrape, copy, paraphrase, or reproduce official ETS paid or protected items.
 - Use clear non-affiliation language throughout the site and docs.
 - Never claim official scoring, guaranteed pass likelihood, or equivalence to the live exam.
-- Persist learner history only on the local device/browser unless the learner exports it manually.
+- Store learner history and resumable sessions in the backend for cross-device continuity.
+- Limit local browser storage to auth session state, theme preference, and temporary in-memory UI state.
 
 # Architecture Constraints
 
 - Default stack: Vite, React, TypeScript.
-- Persistence: IndexedDB using Dexie.
+- Persistence: Supabase Auth + Postgres with row-level security.
 - Visualization: Recharts unless a simpler static-friendly chart approach is clearly better.
 - Deployment target: GitHub Pages via GitHub Actions.
-- Keep the app fully static and browser-executed.
+- Keep the frontend fully static and browser-executed, with backend sync handled by Supabase.
 - Organize code so the question bank, scoring logic, persistence, and insights are independently testable.
 
 # Quality Bar
@@ -57,7 +58,7 @@ Build and maintain a production-ready static website that helps one learner prac
 # Testing Expectations
 
 - Add fast unit tests for domain logic first.
-- Add targeted tests for data import/export and persistence helpers.
+- Add targeted tests for data import/export and backend persistence helpers.
 - Add light integration coverage only where it materially reduces risk.
 - Treat failing tests as blockers for shipping.
 
