@@ -6,23 +6,28 @@ import {
   useMemo,
   useState,
 } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
 import { questionBank } from './data/questions'
 import {
+  exportHistory,
   clearActiveSession,
   clearAllHistory,
-  exportHistory,
-  getActiveSession,
-  getAttempts,
+  fetchLearnerHistory,
   importHistory,
   saveActiveSession,
   saveAttempt,
-} from './lib/db/historyService'
+} from './lib/backend/historyService'
 import { createQuizSession } from './lib/quiz/engine'
 import { scoreSession } from './lib/quiz/scoring'
+import { hasSupabaseConfig, supabase } from './lib/supabase/client'
+import { useThemePreference } from './lib/theme'
+import { getErrorMessage } from './lib/utils/error'
 import type { ActiveSession, Attempt, HistoryExport, QuizConfig } from './types'
 import './index.css'
+import { AuthPage } from './pages/AuthPage'
+import { SetupPage } from './pages/SetupPage'
 
 const HomePage = lazy(() =>
   import('./pages/HomePage').then((module) => ({ default: module.HomePage }))
@@ -65,90 +70,314 @@ export default function App() {
   const [activeSession, setActiveSession] = useState<
     ActiveSession | undefined
   >()
-  const [loading, setLoading] = useState(true)
+  const [session, setSession] = useState<Session | null>(null)
+  const [authLoading, setAuthLoading] = useState(hasSupabaseConfig)
+  const [dataLoading, setDataLoading] = useState(hasSupabaseConfig)
+  const [authActionLoading, setAuthActionLoading] = useState(false)
+  const [authMessage, setAuthMessage] = useState<string | null>(null)
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [syncError, setSyncError] = useState<string | null>(null)
+  const { preference, setPreference } = useThemePreference()
   const hasHistory = useMemo(() => attempts.length > 0, [attempts])
 
-  const refresh = useCallback(async () => {
-    const [nextAttempts, nextSession] = await Promise.all([
-      getAttempts(),
-      getActiveSession(),
-    ])
-    setAttempts(nextAttempts)
-    setActiveSession(nextSession)
+  const refresh = useCallback(async (userId: string) => {
+    setDataLoading(true)
+
+    try {
+      const nextState = await fetchLearnerHistory(userId)
+      setAttempts(nextState.attempts)
+      setActiveSession(nextState.activeSession)
+      setSyncError(null)
+    } catch (error) {
+      setSyncError(getErrorMessage(error))
+    } finally {
+      setDataLoading(false)
+    }
   }, [])
 
   useEffect(() => {
+    if (!supabase) {
+      return undefined
+    }
+
+    let mounted = true
+
     void (async () => {
-      setLoading(true)
-      await refresh()
-      setLoading(false)
+      const {
+        data: { session: nextSession },
+        error,
+      } = await supabase.auth.getSession()
+
+      if (!mounted) {
+        return
+      }
+
+      if (error) {
+        setAuthError(getErrorMessage(error))
+      }
+
+      setSession(nextSession)
+      setAuthLoading(false)
+
+      if (nextSession?.user.id) {
+        await refresh(nextSession.user.id)
+      } else {
+        setAttempts([])
+        setActiveSession(undefined)
+        setDataLoading(false)
+      }
     })()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession)
+      setAuthError(null)
+
+      if (nextSession?.user.id) {
+        void refresh(nextSession.user.id)
+      } else {
+        setAttempts([])
+        setActiveSession(undefined)
+        setDataLoading(false)
+      }
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [refresh])
+
+  useEffect(() => {
+    if (!session?.user.id) {
+      return undefined
+    }
+
+    const userId = session.user.id
+
+    function handleVisibilitySync() {
+      if (document.visibilityState === 'visible') {
+        void refresh(userId)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilitySync)
+    window.addEventListener('focus', handleVisibilitySync)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilitySync)
+      window.removeEventListener('focus', handleVisibilitySync)
+    }
+  }, [refresh, session?.user.id])
+
+  const handleSignIn = useCallback(async (email: string, password: string) => {
+    if (!supabase) {
+      return
+    }
+
+    setAuthActionLoading(true)
+    setAuthError(null)
+    setAuthMessage(null)
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        throw error
+      }
+    } catch (error) {
+      setAuthError(getErrorMessage(error))
+      throw error
+    } finally {
+      setAuthActionLoading(false)
+    }
+  }, [])
+
+  const handleSignUp = useCallback(async (email: string, password: string) => {
+    if (!supabase) {
+      return
+    }
+
+    setAuthActionLoading(true)
+    setAuthError(null)
+    setAuthMessage(null)
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            learner_name: 'Dove',
+          },
+        },
+      })
+
+      if (error) {
+        throw error
+      }
+
+      setAuthMessage(
+        data.session
+          ? 'Your sync account is ready. Start a practice set when you are.'
+          : 'Check your email to confirm the account, then sign in to start syncing.'
+      )
+    } catch (error) {
+      setAuthError(getErrorMessage(error))
+      throw error
+    } finally {
+      setAuthActionLoading(false)
+    }
+  }, [])
+
+  const handleSignOut = useCallback(async () => {
+    if (!supabase) {
+      return
+    }
+
+    await supabase.auth.signOut()
+    setAttempts([])
+    setActiveSession(undefined)
+    setSyncError(null)
+  }, [])
 
   const handleStartQuiz = useCallback(
     async (config: QuizConfig) => {
-      const session = createQuizSession(config, questionBank, attempts)
-      await saveActiveSession(session)
-      setActiveSession(session)
+      const userId = session?.user.id
+
+      if (!userId) {
+        throw new Error('Sign in is required before starting a quiz.')
+      }
+
+      const nextSession = createQuizSession(config, questionBank, attempts)
+      await saveActiveSession(userId, nextSession)
+      setActiveSession(nextSession)
+      setSyncError(null)
     },
-    [attempts]
+    [attempts, session?.user.id]
   )
 
-  const handleSessionChange = useCallback(async (session: ActiveSession) => {
-    await saveActiveSession(session)
-    setActiveSession(session)
-  }, [])
+  const handleSessionChange = useCallback(
+    async (nextSession: ActiveSession) => {
+      const userId = session?.user.id
+
+      if (!userId) {
+        throw new Error('Sign in is required before syncing progress.')
+      }
+
+      setActiveSession(nextSession)
+
+      try {
+        await saveActiveSession(userId, nextSession)
+        setSyncError(null)
+      } catch (error) {
+        setSyncError(
+          `${getErrorMessage(error)} Your latest change has not been confirmed by the backend yet.`
+        )
+        throw error
+      }
+    },
+    [session?.user.id]
+  )
 
   const handleSubmitSession = useCallback(
-    async (session: ActiveSession) => {
+    async (activeQuizSession: ActiveSession) => {
+      const userId = session?.user.id
+
+      if (!userId) {
+        throw new Error('Sign in is required before submitting an attempt.')
+      }
+
       const attempt = scoreSession(
-        session,
+        activeQuizSession,
         new Map(questionBank.map((item) => [item.id, item]))
       )
-      await saveAttempt(attempt)
-      await clearActiveSession()
-      await refresh()
+
+      await saveAttempt(userId, attempt)
+      await clearActiveSession(userId)
+      await refresh(userId)
       return attempt
     },
-    [refresh]
+    [refresh, session?.user.id]
   )
 
   const handleExportHistory = useCallback(async () => {
-    const payload = await exportHistory()
+    const payload = exportHistory(attempts, activeSession)
     downloadJson('para-practice-history.json', payload)
-  }, [])
+  }, [activeSession, attempts])
 
   const handleImportHistory = useCallback(
     async (file: File) => {
+      const userId = session?.user.id
+
+      if (!userId) {
+        throw new Error('Sign in is required before importing history.')
+      }
+
       const text = await file.text()
-      const payload = JSON.parse(text) as HistoryExport
-      await importHistory(payload)
-      await refresh()
+      const payload = JSON.parse(text)
+      await importHistory(userId, payload)
+      await refresh(userId)
     },
-    [refresh]
+    [refresh, session?.user.id]
   )
 
   const handleClearHistory = useCallback(async () => {
-    await clearAllHistory()
+    const userId = session?.user.id
+
+    if (!userId) {
+      throw new Error('Sign in is required before clearing history.')
+    }
+
+    await clearAllHistory(userId)
     setAttempts([])
     setActiveSession(undefined)
-  }, [])
+    setSyncError(null)
+  }, [session?.user.id])
 
-  if (loading) {
+  if (!hasSupabaseConfig) {
+    return <SetupPage />
+  }
+
+  if (authLoading || (session && dataLoading)) {
     return (
       <div className="app-shell">
         <section className="page-band">
           <div className="shell-inner empty-state">
-            <h1>Loading your local study data...</h1>
+            <h1>Preparing Dove&apos;s study space...</h1>
           </div>
         </section>
       </div>
     )
   }
 
+  if (!session) {
+    return (
+      <AuthPage
+        loading={authActionLoading}
+        message={authMessage}
+        error={authError}
+        onSignIn={handleSignIn}
+        onSignUp={handleSignUp}
+      />
+    )
+  }
+
   return (
     <HashRouter>
-      <AppLayout activeSession={activeSession} attemptCount={attempts.length}>
+      <AppLayout
+        activeSession={activeSession}
+        attemptCount={attempts.length}
+        notice={syncError}
+        userEmail={session.user.email ?? 'Signed in'}
+        themePreference={preference}
+        onThemeChange={setPreference}
+        onSignOut={handleSignOut}
+      >
         <Suspense
           fallback={
             <section className="page-band">

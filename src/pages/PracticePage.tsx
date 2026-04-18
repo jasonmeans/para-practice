@@ -11,6 +11,7 @@ import {
   updateSessionConfidence,
   updateSessionIndex,
 } from '../lib/quiz/session'
+import { getErrorMessage } from '../lib/utils/error'
 import { formatDuration } from '../lib/utils/format'
 import { ProgressBar } from '../components/ProgressBar'
 import { QuestionCard } from '../components/QuestionCard'
@@ -67,7 +68,7 @@ export function PracticePage({
         ...activeSession,
         elapsedSeconds: getElapsedSeconds(activeSession),
         lastResumedAt: new Date().toISOString(),
-      })
+      }).catch(() => undefined)
     }, 15000)
 
     return () => window.clearInterval(saveTimer)
@@ -100,16 +101,28 @@ export function PracticePage({
     : getElapsedSeconds(session, new Date(clock).toISOString())
 
   async function moveTo(index: number) {
-    await onSessionChange(updateSessionIndex(session, index))
+    try {
+      await onSessionChange(updateSessionIndex(session, index))
+    } catch (error) {
+      window.alert(getErrorMessage(error))
+    }
   }
 
   async function handlePause() {
-    await onSessionChange(pauseSession(session))
-    navigate('/')
+    try {
+      await onSessionChange(pauseSession(session))
+      navigate('/')
+    } catch (error) {
+      window.alert(getErrorMessage(error))
+    }
   }
 
   async function handleResume() {
-    await onSessionChange(resumeSession(session))
+    try {
+      await onSessionChange(resumeSession(session))
+    } catch (error) {
+      window.alert(getErrorMessage(error))
+    }
   }
 
   async function handleSubmit() {
@@ -123,8 +136,18 @@ export function PracticePage({
       }
     }
 
-    const attempt = await onSubmitSession(session)
-    navigate(`/results/${attempt.id}`)
+    try {
+      const attempt = await onSubmitSession(session)
+      navigate(`/results/${attempt.id}`)
+    } catch (error) {
+      window.alert(getErrorMessage(error))
+    }
+  }
+
+  function persistInlineChange(nextSession: ActiveSession) {
+    void onSessionChange(nextSession).catch((error) =>
+      window.alert(getErrorMessage(error))
+    )
   }
 
   return (
@@ -206,12 +229,12 @@ export function PracticePage({
             }
             confidence={session.answers[currentQuestion.id]?.confidence}
             onSelect={(selectedOption) =>
-              void onSessionChange(
+              persistInlineChange(
                 updateSessionAnswer(session, currentQuestion.id, selectedOption)
               )
             }
             onConfidence={(confidence) =>
-              void onSessionChange(
+              persistInlineChange(
                 updateSessionConfidence(session, currentQuestion.id, confidence)
               )
             }

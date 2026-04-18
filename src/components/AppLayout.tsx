@@ -1,16 +1,27 @@
 import { NavLink } from 'react-router-dom'
-import { APP_TITLE } from '../data/constants'
-import type { ActiveSession } from '../types'
+import { APP_SUBTITLE, APP_TITLE } from '../data/constants'
+import type { ActiveSession, ThemePreference } from '../types'
+import { ThemeToggle } from './ThemeToggle'
 
 interface AppLayoutProps {
   activeSession?: ActiveSession
   attemptCount: number
+  notice?: string | null
+  userEmail: string
+  themePreference: ThemePreference
+  onThemeChange: (preference: ThemePreference) => void
+  onSignOut: () => Promise<void>
   children: React.ReactNode
 }
 
 export function AppLayout({
   activeSession,
   attemptCount,
+  notice,
+  userEmail,
+  themePreference,
+  onThemeChange,
+  onSignOut,
   children,
 }: AppLayoutProps) {
   return (
@@ -18,23 +29,37 @@ export function AppLayout({
       <header className="site-header">
         <div className="shell-inner site-header__inner">
           <div>
-            <p className="eyebrow">Unofficial original study aid</p>
+            <p className="eyebrow">For Dove · unofficial original study aid</p>
             <NavLink to="/" className="site-title">
               {APP_TITLE}
             </NavLink>
-            <p className="site-subtitle">
-              ParaPro (1755) practice tests, section drills, history, and study
-              insights
-            </p>
+            <p className="site-subtitle">{APP_SUBTITLE}</p>
           </div>
 
-          <div className="site-header__meta">
-            <span className="meta-pill">{attemptCount} attempts saved</span>
-            {activeSession ? (
+          <div className="site-header__controls">
+            <ThemeToggle
+              preference={themePreference}
+              onChange={onThemeChange}
+            />
+            <div className="site-header__meta">
               <span className="meta-pill meta-pill--active">
-                Resume available
+                Synced across devices
               </span>
-            ) : null}
+              <span className="meta-pill">{attemptCount} attempts saved</span>
+              {activeSession ? (
+                <span className="meta-pill meta-pill--active">
+                  Resume available
+                </span>
+              ) : null}
+              <span className="meta-pill">{userEmail}</span>
+              <button
+                type="button"
+                className="button button--ghost"
+                onClick={() => void onSignOut()}
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </div>
 
@@ -75,6 +100,11 @@ export function AppLayout({
             </NavLink>
           ) : null}
         </nav>
+        {notice ? (
+          <div className="shell-inner notice-banner" role="status">
+            {notice}
+          </div>
+        ) : null}
       </header>
 
       <main>{children}</main>

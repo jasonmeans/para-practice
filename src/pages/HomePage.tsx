@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  DOVE_HERO_IMAGE,
   FOCUSED_QUIZ_COUNT_OPTIONS,
   FULL_TEST_COUNT_OPTIONS,
   SECTION_LABELS,
@@ -8,6 +9,7 @@ import {
   STORAGE_NOTE,
 } from '../data/constants'
 import { analyzeAttempts } from '../lib/insights/analyze'
+import { getErrorMessage } from '../lib/utils/error'
 import type { ActiveSession, Attempt, QuizConfig, Section } from '../types'
 
 interface HomePageProps {
@@ -33,9 +35,15 @@ export function HomePage({
 
   async function start(config: QuizConfig) {
     setBusyMode(config.mode)
-    await onStartQuiz(config)
-    navigate('/practice')
-    setBusyMode(null)
+
+    try {
+      await onStartQuiz(config)
+      navigate('/practice')
+    } catch (error) {
+      window.alert(getErrorMessage(error))
+    } finally {
+      setBusyMode(null)
+    }
   }
 
   return (
@@ -43,15 +51,12 @@ export function HomePage({
       <section className="page-band page-band--intro">
         <div className="shell-inner intro-grid">
           <div className="intro-copy">
-            <p className="eyebrow">Study tool only</p>
-            <h1>
-              Practice the skills behind ParaPro (1755) with a fresh mix each
-              time.
-            </h1>
+            <p className="eyebrow">For Dove</p>
+            <h1>A calm runway into test day, with a fresh mix every time.</h1>
             <p className="lede">
               This site uses original practice content based on public skill
-              domains. It is not affiliated with ETS, and it does not predict an
-              official score.
+              domains. It is not affiliated with ETS, and it does not claim an
+              official score or pass prediction.
             </p>
 
             <div className="metric-row">
@@ -74,8 +79,8 @@ export function HomePage({
 
           <figure className="study-photo">
             <img
-              src="https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1400&q=80"
-              alt="Open notebook, coffee, and study materials on a desk"
+              src={DOVE_HERO_IMAGE}
+              alt="White dove in flight against a blue sky"
             />
           </figure>
         </div>
@@ -174,7 +179,7 @@ export function HomePage({
             <h2>Weak-area quiz</h2>
             <p>
               Adaptive selection leans toward sections and topics you have
-              missed before.
+              missed before, so the next round meets you where you are.
             </p>
             <label className="field">
               <span>Questions</span>
@@ -239,7 +244,7 @@ export function HomePage({
           </div>
 
           <div>
-            <h2>Keep an eye on</h2>
+            <h2>Keep the rhythm</h2>
             <ul className="bullet-list">
               {insights.studyTips.slice(0, 3).map((tip) => (
                 <li key={tip}>{tip}</li>

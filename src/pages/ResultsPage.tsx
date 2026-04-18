@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { SECTION_LABELS } from '../data/constants'
 import { questionsById } from '../data/questions'
+import { getErrorMessage } from '../lib/utils/error'
 import {
   formatDateTime,
   formatDuration,
@@ -23,7 +24,7 @@ export function ResultsPage({ attempts, onStartQuiz }: ResultsPageProps) {
       <section className="page-band">
         <div className="shell-inner empty-state">
           <h1>Attempt not found</h1>
-          <p>The result you asked for is not available in local history.</p>
+          <p>The result you asked for is not available in synced history.</p>
           <Link to="/history" className="button button--primary">
             View History
           </Link>
@@ -33,12 +34,16 @@ export function ResultsPage({ attempts, onStartQuiz }: ResultsPageProps) {
   }
 
   async function startWeakArea() {
-    await onStartQuiz({
-      mode: 'weak-area',
-      count: 10,
-      title: 'Weak-Area Quiz',
-    })
-    navigate('/practice')
+    try {
+      await onStartQuiz({
+        mode: 'weak-area',
+        count: 10,
+        title: 'Weak-Area Quiz',
+      })
+      navigate('/practice')
+    } catch (error) {
+      window.alert(getErrorMessage(error))
+    }
   }
 
   return (

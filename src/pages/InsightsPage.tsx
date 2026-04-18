@@ -21,7 +21,7 @@ export function InsightsPage({ attempts }: InsightsPageProps) {
               round.
             </h1>
             <p className="lede">
-              Trends here are study-readiness signals from your local practice
+              Trends here are study-readiness signals from your synced practice
               history, not official score predictions.
             </p>
 

@@ -8,6 +8,8 @@ export const SECTIONS = [
 export type Section = (typeof SECTIONS)[number]
 
 export type Difficulty = 'foundation' | 'core' | 'stretch'
+export type ThemePreference = 'system' | 'light' | 'dark'
+export type ResolvedTheme = 'light' | 'dark'
 
 export type QuizMode =
   | 'full-test'
@@ -120,4 +122,9 @@ export interface LearnerInsights {
   trendDelta: number
   recommendedFocusAreas: string[]
   studyTips: string[]
+}
+
+export interface LearnerHistoryState {
+  attempts: Attempt[]
+  activeSession?: ActiveSession
 }

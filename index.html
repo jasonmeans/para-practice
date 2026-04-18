@@ -6,9 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Unofficial ParaPro (1755) practice tests, section quizzes, study insights, and local progress tracking."
+      content="Dove's unofficial ParaPro (1755) practice studio with synced history, original quizzes, and study insights."
     />
-    <title>ParaPro Practice Studio</title>
+    <script>
+      ;(() => {
+        try {
+          const stored = localStorage.getItem('para-practice-theme-preference')
+          const prefersDark = window.matchMedia(
+            '(prefers-color-scheme: dark)'
+          ).matches
+          const resolved =
+            stored === 'dark' || stored === 'light'
+              ? stored
+              : prefersDark
+                ? 'dark'
+                : 'light'
+          document.documentElement.dataset.theme = resolved
+          document.documentElement.style.colorScheme = resolved
+        } catch (_error) {}
+      })()
+    </script>
+    <title>Dove's ParaPro Practice</title>
   </head>
   <body>
     <div id="root"></div>
