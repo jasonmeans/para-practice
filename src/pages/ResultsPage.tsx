@@ -1,0 +1,167 @@
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { SECTION_LABELS } from '../data/constants'
+import { questionsById } from '../data/questions'
+import {
+  formatDateTime,
+  formatDuration,
+  formatPercent,
+} from '../lib/utils/format'
+import type { Attempt, QuizConfig } from '../types'
+
+interface ResultsPageProps {
+  attempts: Attempt[]
+  onStartQuiz: (config: QuizConfig) => Promise<void>
+}
+
+export function ResultsPage({ attempts, onStartQuiz }: ResultsPageProps) {
+  const { attemptId } = useParams()
+  const navigate = useNavigate()
+  const attempt = attempts.find((item) => item.id === attemptId)
+
+  if (!attempt) {
+    return (
+      <section className="page-band">
+        <div className="shell-inner empty-state">
+          <h1>Attempt not found</h1>
+          <p>The result you asked for is not available in local history.</p>
+          <Link to="/history" className="button button--primary">
+            View History
+          </Link>
+        </div>
+      </section>
+    )
+  }
+
+  async function startWeakArea() {
+    await onStartQuiz({
+      mode: 'weak-area',
+      count: 10,
+      title: 'Weak-Area Quiz',
+    })
+    navigate('/practice')
+  }
+
+  return (
+    <>
+      <section className="page-band page-band--intro">
+        <div className="shell-inner results-hero">
+          <div>
+            <p className="eyebrow">Attempt review</p>
+            <h1>{attempt.title}</h1>
+            <p className="lede">
+              Completed {formatDateTime(attempt.completedAt)} ·{' '}
+              {formatDuration(attempt.durationSeconds)}
+            </p>
+          </div>
+
+          <div className="metric-row">
+            <div className="metric-card">
+              <span className="metric-label">Score</span>
+              <strong>{formatPercent(attempt.percentCorrect)}</strong>
+            </div>
+            <div className="metric-card">
+              <span className="metric-label">Correct</span>
+              <strong>
+                {attempt.totalCorrect}/{attempt.count}
+              </strong>
+            </div>
+            <div className="metric-card">
+              <span className="metric-label">Focus</span>
+              <strong>{attempt.recommendedFocus[0] ?? 'Keep going'}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="page-band">
+        <div className="shell-inner two-column-band">
+          <div>
+            <h2>Section scores</h2>
+            <ul className="score-list">
+              {attempt.sectionBreakdown.map((section) => (
+                <li key={section.section} className="score-list__item">
+                  <span>{SECTION_LABELS[section.section]}</span>
+                  <strong>
+                    {section.correct}/{section.total} (
+                    {formatPercent(section.percent)})
+                  </strong>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h2>Recommended focus areas</h2>
+            <ul className="bullet-list">
+              {attempt.recommendedFocus.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="button button--primary"
+              onClick={() => void startWeakArea()}
+            >
+              Start a weak-area quiz
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="page-band">
+        <div className="shell-inner">
+          <h2>Question review</h2>
+          <div className="review-list">
+            {attempt.answers.map((answer, index) => {
+              const question = questionsById.get(answer.questionId)
+
+              if (!question) {
+                return null
+              }
+
+              return (
+                <details key={answer.questionId} className="review-card">
+                  <summary>
+                    <span>Question {index + 1}</span>
+                    <strong
+                      className={
+                        answer.isCorrect ? 'result-good' : 'result-miss'
+                      }
+                    >
+                      {answer.isCorrect ? 'Correct' : 'Review'}
+                    </strong>
+                  </summary>
+                  {question.scenario ? <p>{question.scenario}</p> : null}
+                  <p>{question.prompt}</p>
+                  <ul className="review-options">
+                    {question.options.map((option, optionIndex) => {
+                      const isCorrect = optionIndex === question.correctAnswer
+                      const isChosen = optionIndex === answer.selectedOption
+
+                      return (
+                        <li
+                          key={option}
+                          className={
+                            isCorrect
+                              ? 'review-option is-correct'
+                              : isChosen
+                                ? 'review-option is-selected'
+                                : 'review-option'
+                          }
+                        >
+                          <span>{String.fromCharCode(65 + optionIndex)}.</span>{' '}
+                          {option}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                  <p className="review-explanation">{question.explanation}</p>
+                </details>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}
