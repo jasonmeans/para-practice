@@ -2,12 +2,38 @@ import { useEffect, useMemo, useState } from 'react'
 import { THEME_STORAGE_KEY } from '../data/constants'
 import type { ResolvedTheme, ThemePreference } from '../types'
 
+function canUseBrowser() {
+  return typeof window !== 'undefined' && typeof document !== 'undefined'
+}
+
+function getColorSchemeMediaQuery() {
+  if (!canUseBrowser() || typeof window.matchMedia !== 'function') {
+    return null
+  }
+
+  try {
+    return window.matchMedia('(prefers-color-scheme: dark)')
+  } catch {
+    return null
+  }
+}
+
 function getSystemDarkPreference() {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
+  return getColorSchemeMediaQuery()?.matches ?? false
 }
 
 function getStoredThemePreference(): ThemePreference {
-  const storedValue = window.localStorage.getItem(THEME_STORAGE_KEY)
+  if (!canUseBrowser()) {
+    return 'system'
+  }
+
+  let storedValue: string | null = null
+
+  try {
+    storedValue = window.localStorage.getItem(THEME_STORAGE_KEY)
+  } catch {
+    return 'system'
+  }
 
   if (
     storedValue === 'system' ||
@@ -32,6 +58,10 @@ export function resolveTheme(
 }
 
 function applyTheme(resolvedTheme: ResolvedTheme) {
+  if (!canUseBrowser()) {
+    return
+  }
+
   document.documentElement.dataset.theme = resolvedTheme
   document.documentElement.style.colorScheme = resolvedTheme
 }
@@ -45,14 +75,27 @@ export function useThemePreference() {
   )
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const mediaQuery = getColorSchemeMediaQuery()
+
+    if (!mediaQuery) {
+      return undefined
+    }
 
     function handleChange(event: MediaQueryListEvent) {
       setSystemPrefersDark(event.matches)
     }
 
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    }
+
+    if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(handleChange)
+      return () => mediaQuery.removeListener(handleChange)
+    }
+
+    return undefined
   }, [])
 
   const resolvedTheme = useMemo(
@@ -61,7 +104,15 @@ export function useThemePreference() {
   )
 
   useEffect(() => {
-    window.localStorage.setItem(THEME_STORAGE_KEY, preference)
+    if (!canUseBrowser()) {
+      return
+    }
+
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, preference)
+    } catch {
+      // Ignore blocked storage environments such as stricter in-app browsers.
+    }
   }, [preference])
 
   useEffect(() => {
