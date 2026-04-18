@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { SECTION_LABELS } from '../data/constants'
 import { questionsById } from '../data/questions'
+import { buildFriendlyReview } from '../lib/quiz/explanations'
 import { getErrorMessage } from '../lib/utils/error'
 import {
   formatDateTime,
@@ -124,6 +125,8 @@ export function ResultsPage({ attempts, onStartQuiz }: ResultsPageProps) {
                 return null
               }
 
+              const review = buildFriendlyReview(question, answer)
+
               return (
                 <details key={answer.questionId} className="review-card">
                   <summary>
@@ -160,7 +163,48 @@ export function ResultsPage({ attempts, onStartQuiz }: ResultsPageProps) {
                       )
                     })}
                   </ul>
-                  <p className="review-explanation">{question.explanation}</p>
+                  <div className="review-coaching">
+                    <div className="review-answer-grid">
+                      <div className="review-answer-row">
+                        <span className="review-answer-row__label">
+                          Correct answer
+                        </span>
+                        <strong>
+                          {review.correctChoice.label}.{' '}
+                          {review.correctChoice.text}
+                        </strong>
+                      </div>
+                      <div className="review-answer-row">
+                        <span className="review-answer-row__label">
+                          Your answer
+                        </span>
+                        <strong>
+                          {review.selectedChoice
+                            ? `${review.selectedChoice.label}. ${review.selectedChoice.text}`
+                            : 'Not answered'}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <p className="review-coaching__status">
+                      {review.statusMessage}
+                    </p>
+                    <p className="review-explanation">
+                      <strong>Why this is right:</strong> {question.explanation}
+                    </p>
+                    <p className="review-simple">{review.simpleReason}</p>
+
+                    <div className="review-coaching__steps">
+                      <p className="review-coaching__title">
+                        {review.coachingTitle}
+                      </p>
+                      <ol className="review-steps">
+                        {review.nextTimeSteps.map((step) => (
+                          <li key={step}>{step}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  </div>
                 </details>
               )
             })}
