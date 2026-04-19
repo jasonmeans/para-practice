@@ -1,4 +1,5 @@
 import { hasSupabaseConfig, supabase } from '../supabase/client'
+import { resolveLocalApiBaseUrl } from './publicBridge'
 
 export interface AuthUser {
   id: string
@@ -14,8 +15,9 @@ export interface SignUpResult {
 }
 
 export const backendMode = hasSupabaseConfig ? 'supabase' : 'local'
-const localApiBaseUrl =
-  import.meta.env.VITE_LOCAL_API_BASE_URL?.replace(/\/+$/, '') ?? ''
+const localApiBaseUrl = resolveLocalApiBaseUrl(
+  import.meta.env.VITE_LOCAL_API_BASE_URL
+)
 const localSessionTokenKey = 'para_practice_local_auth_token'
 
 interface LocalAuthPayload {

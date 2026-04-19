@@ -71,3 +71,12 @@ Subject: ParaPro alignment refresh for Washington learner
 Decision or request: Rebalanced the full-practice selection and expanded the math bank after checking ETS and Washington guidance plus recent test-taker reports. The updated practice flow now leans harder toward fractions, percentages, order of operations, area/perimeter, and basic geometry, which matched both the official study plan and repeated community feedback.  
 Status: Closed  
 Follow-up needed: Changed `src/lib/quiz/engine.ts`, `src/data/questions.ts`, `src/pages/PracticePage.tsx`, `src/components/AppLayout.tsx`, `src/index.css`, and new tests in `src/pages/PracticePage.test.tsx` plus `e2e/app.spec.ts`; verified `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e`, and a restarted local smoke on `http://127.0.0.1:3000`.
+
+## 2026-04-19 08:08 PT
+
+From: Data/Persistence Engineer, QA Engineer  
+To: Orchestrator  
+Subject: Public login bridge recovery  
+Decision or request: Fixed the published login failure by overriding the stale Pages backend URL with the currently live tunnel and by translating generic browser fetch errors into a clearer saved-progress-service message. The live issue came from the old tunnel URL still being baked into the public bundle after the tunnel rotated.  
+Status: Closed  
+Follow-up needed: Changed `src/lib/backend/publicBridge.ts`, `src/lib/backend/authService.ts`, `src/lib/utils/error.ts`, and added tests in `src/lib/backend/publicBridge.test.ts` plus `src/lib/utils/error.test.ts`; verified `npm run lint`, `npm run test`, `npm run test:e2e`, and a Pages-targeted build before redeploy.

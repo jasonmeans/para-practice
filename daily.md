@@ -158,3 +158,29 @@ Validation completed:
 Next steps:
 
 - Keep expanding original math coverage, especially around no-calculator multi-step items, if more realism is needed after Dove tries the new mix
+
+## 2026-04-19 - Public login recovery
+
+Current focus:
+
+- Restore account sign-in on the published GitHub Pages site
+- Stop stale backend bridge URLs from showing up as a vague browser error
+- Re-verify the full browser flow after the public auth fix
+
+Tasks completed:
+
+- Confirmed the deployed Pages bundle was still pointing at an expired tunnel URL while the active backend had moved to a new public address
+- Added a published-site backend bridge override so the public bundle uses the live tunnel instead of the stale secret-backed URL
+- Translated generic network fetch failures into a clearer saved-progress-service message for login and history loads
+- Added focused unit coverage for the public-bridge selection and error-message normalization
+
+Validation completed:
+
+- Verified `npm run lint`
+- Verified `npm run test`
+- Verified `npm run test:e2e`
+- Verified a Pages-targeted build
+
+Next steps:
+
+- Keep an eye on the backend tunnel; if it rotates again, move the site to a stable hosted backend so the public build no longer depends on a local tunnel
