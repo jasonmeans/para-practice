@@ -170,7 +170,7 @@ Current focus:
 Tasks completed:
 
 - Confirmed the deployed Pages bundle was still pointing at an expired tunnel URL while the active backend had moved to a new public address
-- Added a published-site backend bridge override so the public bundle uses the live tunnel instead of the stale secret-backed URL
+- Replaced the rotating localhost.run bridge with a fixed localtunnel subdomain for the published site
 - Translated generic network fetch failures into a clearer saved-progress-service message for login and history loads
 - Added focused unit coverage for the public-bridge selection and error-message normalization
 
@@ -180,7 +180,8 @@ Validation completed:
 - Verified `npm run test`
 - Verified `npm run test:e2e`
 - Verified a Pages-targeted build
+- Verified the fixed public tunnel returns the expected CORS headers for GitHub Pages requests
 
 Next steps:
 
-- Keep an eye on the backend tunnel; if it rotates again, move the site to a stable hosted backend so the public build no longer depends on a local tunnel
+- Move the public backend to hosted Supabase later so the published site no longer depends on the local machine staying online

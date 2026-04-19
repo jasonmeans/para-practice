@@ -63,7 +63,7 @@ The goal is to give one learner a steady, encouraging place to practice, review 
 
 - By default, attempt history and active sessions live in [`~/.para-practice-local/store.json`](/Users/jasonmeans/.para-practice-local/store.json) through the bundled local backend.
 - When Supabase browser credentials are provided at build time, the app switches to Supabase Auth + Postgres instead.
-- When `VITE_LOCAL_API_BASE_URL` is provided at build time, GitHub Pages points at the same bundled backend over HTTPS.
+- GitHub Pages can point at the bundled backend over HTTPS through the fixed public bridge in [`src/lib/backend/publicBridge.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/backend/publicBridge.ts).
 - The browser keeps only the auth session locally.
 - JSON export/import remains available for backup and restore.
 
@@ -95,7 +95,7 @@ The local backend listens on the same origin as the app and writes account data 
 
 GitHub Pages can run in either of these hosted modes:
 
-- `VITE_LOCAL_API_BASE_URL`: connect the static Pages build to the bundled local backend through a public HTTPS tunnel
+- `VITE_LOCAL_API_BASE_URL`: optional override for the public HTTPS backend used by a static Pages build
 - `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY`: switch the app to Supabase Auth + Postgres
 
 If you want to provide your own hosted configuration, copy the env template:
@@ -106,14 +106,14 @@ cp .env.example .env.local
 
 Then either:
 
-1. fill in `VITE_LOCAL_API_BASE_URL` with your HTTPS backend URL
+1. optionally fill in `VITE_LOCAL_API_BASE_URL` with your HTTPS backend URL if you want to override the default public bridge
 
 or:
 
 1. create a Supabase project
 2. run the SQL in [`supabase/migrations/20260418_backend_sync.sql`](/Users/jasonmeans/code/personal/para-practice/supabase/migrations/20260418_backend_sync.sql)
 3. fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
-4. add the same values as GitHub repository secrets for the Pages workflow
+4. add the same values as GitHub repository secrets for the Pages workflow if you are overriding the default public bridge
 5. add your local and Pages URLs to Supabase Auth allowed redirects
 
 ## Testing
@@ -141,7 +141,7 @@ The repository includes a GitHub Actions workflow at [`.github/workflows/deploy-
 
 The workflow automatically switches Vite into GitHub Pages base-path mode with `BUILD_TARGET=pages`.
 
-For this machine, the published site is available at [https://jasonmeans.github.io/para-practice/](https://jasonmeans.github.io/para-practice/). The local backend bridge is maintained by [`scripts/public-backend-daemon.mjs`](/Users/jasonmeans/code/personal/para-practice/scripts/public-backend-daemon.mjs), which updates the `VITE_LOCAL_API_BASE_URL` repository secret and re-runs the Pages workflow whenever the public tunnel URL changes.
+For this machine, the published site is available at [https://jasonmeans.github.io/para-practice/](https://jasonmeans.github.io/para-practice/). The local backend bridge is maintained by [`scripts/public-backend-daemon.mjs`](/Users/jasonmeans/code/personal/para-practice/scripts/public-backend-daemon.mjs), which keeps a fixed `localtunnel` subdomain alive for the published Pages build.
 
 ### Manual GitHub setup
 
@@ -151,7 +151,7 @@ In the repository settings on GitHub:
 2. Open **Pages**
 3. Set **Source** to **GitHub Actions**
 
-In the repository **Secrets and variables** section, add the hosted backend values you want the Pages build to use:
+In the repository **Secrets and variables** section, add the hosted backend values you want the Pages build to use when you want to override the default fixed public bridge:
 
 - `VITE_LOCAL_API_BASE_URL`
 - `VITE_SUPABASE_URL`

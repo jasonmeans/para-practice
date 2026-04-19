@@ -1,9 +1,9 @@
 const GITHUB_PAGES_HOST = 'jasonmeans.github.io'
 const GITHUB_PAGES_BASE_PATH = '/para-practice/'
 
-// Fallback bridge for the published Pages build while the local backend tunnel
-// remains the active hosted path.
-const PAGES_BRIDGE_API_BASE_URL = 'https://d168d4972b7f7f.lhr.life'
+// Fixed bridge for the published Pages build while the local backend remains
+// the active hosted path.
+const PAGES_BRIDGE_API_BASE_URL = 'https://para-practice-jasonmeans.loca.lt'
 
 export function resolveLocalApiBaseUrl(explicitUrl?: string) {
   const normalizedExplicitUrl = explicitUrl?.replace(/\/+$/, '') ?? ''

@@ -28,7 +28,7 @@ describe('public bridge config', () => {
     })
 
     expect(resolveLocalApiBaseUrl('https://stale.example.com')).toBe(
-      'https://d168d4972b7f7f.lhr.life'
+      'https://para-practice-jasonmeans.loca.lt'
     )
   })
 })
