@@ -6,7 +6,6 @@ import {
   useMemo,
   useState,
 } from 'react'
-import type { Session } from '@supabase/supabase-js'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
 import { questionBank } from './data/questions'
@@ -19,15 +18,20 @@ import {
   saveActiveSession,
   saveAttempt,
 } from './lib/backend/historyService'
+import {
+  type AuthSession,
+  getAuthSession,
+  signIn,
+  signOut,
+  signUp,
+} from './lib/backend/authService'
 import { createQuizSession } from './lib/quiz/engine'
 import { scoreSession } from './lib/quiz/scoring'
-import { hasSupabaseConfig, supabase } from './lib/supabase/client'
 import { useThemePreference } from './lib/theme'
 import { getErrorMessage } from './lib/utils/error'
 import type { ActiveSession, Attempt, HistoryExport, QuizConfig } from './types'
 import './index.css'
 import { AuthPage } from './pages/AuthPage'
-import { SetupPage } from './pages/SetupPage'
 
 const HomePage = lazy(() =>
   import('./pages/HomePage').then((module) => ({ default: module.HomePage }))
@@ -70,14 +74,14 @@ export default function App() {
   const [activeSession, setActiveSession] = useState<
     ActiveSession | undefined
   >()
-  const [session, setSession] = useState<Session | null>(null)
-  const [authLoading, setAuthLoading] = useState(hasSupabaseConfig)
-  const [dataLoading, setDataLoading] = useState(hasSupabaseConfig)
+  const [session, setSession] = useState<AuthSession | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [dataLoading, setDataLoading] = useState(true)
   const [authActionLoading, setAuthActionLoading] = useState(false)
   const [authMessage, setAuthMessage] = useState<string | null>(null)
   const [authError, setAuthError] = useState<string | null>(null)
-  const [syncError, setSyncError] = useState<string | null>(null)
-  const { preference, setPreference } = useThemePreference()
+  const [saveError, setSaveError] = useState<string | null>(null)
+  useThemePreference()
   const hasHistory = useMemo(() => attempts.length > 0, [attempts])
 
   const refresh = useCallback(async (userId: string) => {
@@ -87,37 +91,21 @@ export default function App() {
       const nextState = await fetchLearnerHistory(userId)
       setAttempts(nextState.attempts)
       setActiveSession(nextState.activeSession)
-      setSyncError(null)
+      setSaveError(null)
     } catch (error) {
-      setSyncError(getErrorMessage(error))
+      setSaveError(getErrorMessage(error))
     } finally {
       setDataLoading(false)
     }
   }, [])
 
-  useEffect(() => {
-    if (!supabase) {
-      return undefined
-    }
+  const loadSessionState = useCallback(async () => {
+    setAuthLoading(true)
 
-    let mounted = true
-
-    void (async () => {
-      const {
-        data: { session: nextSession },
-        error,
-      } = await supabase.auth.getSession()
-
-      if (!mounted) {
-        return
-      }
-
-      if (error) {
-        setAuthError(getErrorMessage(error))
-      }
-
+    try {
+      const nextSession = await getAuthSession()
       setSession(nextSession)
-      setAuthLoading(false)
+      setAuthError(null)
 
       if (nextSession?.user.id) {
         await refresh(nextSession.user.id)
@@ -126,28 +114,25 @@ export default function App() {
         setActiveSession(undefined)
         setDataLoading(false)
       }
-    })()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession)
-      setAuthError(null)
-
-      if (nextSession?.user.id) {
-        void refresh(nextSession.user.id)
-      } else {
-        setAttempts([])
-        setActiveSession(undefined)
-        setDataLoading(false)
-      }
-    })
-
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
+    } catch (error) {
+      setAuthError(getErrorMessage(error))
+      setAttempts([])
+      setActiveSession(undefined)
+      setDataLoading(false)
+    } finally {
+      setAuthLoading(false)
     }
   }, [refresh])
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void loadSessionState()
+    }, 0)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [loadSessionState])
 
   useEffect(() => {
     if (!session?.user.id) {
@@ -171,79 +156,56 @@ export default function App() {
     }
   }, [refresh, session?.user.id])
 
-  const handleSignIn = useCallback(async (email: string, password: string) => {
-    if (!supabase) {
-      return
-    }
+  const handleSignIn = useCallback(
+    async (email: string, password: string) => {
+      setAuthActionLoading(true)
+      setAuthError(null)
+      setAuthMessage(null)
 
-    setAuthActionLoading(true)
-    setAuthError(null)
-    setAuthMessage(null)
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
-      if (error) {
+      try {
+        await signIn(email, password)
+        await loadSessionState()
+      } catch (error) {
+        setAuthError(getErrorMessage(error))
         throw error
+      } finally {
+        setAuthActionLoading(false)
       }
-    } catch (error) {
-      setAuthError(getErrorMessage(error))
-      throw error
-    } finally {
-      setAuthActionLoading(false)
-    }
-  }, [])
+    },
+    [loadSessionState]
+  )
 
-  const handleSignUp = useCallback(async (email: string, password: string) => {
-    if (!supabase) {
-      return
-    }
+  const handleSignUp = useCallback(
+    async (email: string, password: string) => {
+      setAuthActionLoading(true)
+      setAuthError(null)
+      setAuthMessage(null)
 
-    setAuthActionLoading(true)
-    setAuthError(null)
-    setAuthMessage(null)
+      try {
+        const result = await signUp(email, password)
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            learner_name: 'Dove',
-          },
-        },
-      })
-
-      if (error) {
+        setAuthMessage(
+          result.sessionCreated
+            ? 'Your practice account is ready. Start a set when you are.'
+            : 'Check your email to confirm the account, then sign in to keep going.'
+        )
+        await loadSessionState()
+      } catch (error) {
+        setAuthError(getErrorMessage(error))
         throw error
+      } finally {
+        setAuthActionLoading(false)
       }
-
-      setAuthMessage(
-        data.session
-          ? 'Your sync account is ready. Start a practice set when you are.'
-          : 'Check your email to confirm the account, then sign in to start syncing.'
-      )
-    } catch (error) {
-      setAuthError(getErrorMessage(error))
-      throw error
-    } finally {
-      setAuthActionLoading(false)
-    }
-  }, [])
+    },
+    [loadSessionState]
+  )
 
   const handleSignOut = useCallback(async () => {
-    if (!supabase) {
-      return
-    }
-
-    await supabase.auth.signOut()
-    setAttempts([])
-    setActiveSession(undefined)
-    setSyncError(null)
-  }, [])
+    setAuthMessage(null)
+    await signOut()
+    await loadSessionState()
+    setSaveError(null)
+  }, [loadSessionState])
 
   const handleStartQuiz = useCallback(
     async (config: QuizConfig) => {
@@ -256,7 +218,7 @@ export default function App() {
       const nextSession = createQuizSession(config, questionBank, attempts)
       await saveActiveSession(userId, nextSession)
       setActiveSession(nextSession)
-      setSyncError(null)
+      setSaveError(null)
     },
     [attempts, session?.user.id]
   )
@@ -266,17 +228,17 @@ export default function App() {
       const userId = session?.user.id
 
       if (!userId) {
-        throw new Error('Sign in is required before syncing progress.')
+        throw new Error('Sign in is required before saving progress.')
       }
 
       setActiveSession(nextSession)
 
       try {
         await saveActiveSession(userId, nextSession)
-        setSyncError(null)
+        setSaveError(null)
       } catch (error) {
-        setSyncError(
-          `${getErrorMessage(error)} Your latest change has not been confirmed by the backend yet.`
+        setSaveError(
+          `${getErrorMessage(error)} Your latest change has not been saved by the app yet.`
         )
         throw error
       }
@@ -336,12 +298,8 @@ export default function App() {
     await clearAllHistory(userId)
     setAttempts([])
     setActiveSession(undefined)
-    setSyncError(null)
+    setSaveError(null)
   }, [session?.user.id])
-
-  if (!hasSupabaseConfig) {
-    return <SetupPage />
-  }
 
   if (authLoading || (session && dataLoading)) {
     return (
@@ -372,10 +330,8 @@ export default function App() {
       <AppLayout
         activeSession={activeSession}
         attemptCount={attempts.length}
-        notice={syncError}
+        notice={saveError}
         userEmail={session.user.email ?? 'Signed in'}
-        themePreference={preference}
-        onThemeChange={setPreference}
         onSignOut={handleSignOut}
       >
         <Suspense

@@ -6,15 +6,16 @@ export function SetupPage() {
     <section className="page-band auth-band">
       <div className="shell-inner auth-layout">
         <div className="auth-copy">
-          <p className="eyebrow">Backend setup needed</p>
-          <h1>Dove&apos;s sync space is almost ready.</h1>
+          <p className="eyebrow">Hosted setup needed</p>
+          <h1>This build is waiting for hosted credentials.</h1>
           <p className="lede">
-            This build is waiting for its backend connection, so practice
-            history cannot sync across browsers yet.
+            The ready-to-run local backend is not part of this deployment, so
+            hosted sign-in needs its Supabase connection before storage can
+            work.
           </p>
           <p className="storage-note">
             Add the missing environment variables, run the Supabase SQL in the
-            repo, and redeploy to turn on cross-device history and resume.
+            repo, and redeploy to turn on hosted accounts and saved progress.
           </p>
           <div className="code-card">
             <pre>

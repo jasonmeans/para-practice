@@ -25,7 +25,7 @@ export function ResultsPage({ attempts, onStartQuiz }: ResultsPageProps) {
       <section className="page-band">
         <div className="shell-inner empty-state">
           <h1>Attempt not found</h1>
-          <p>The result you asked for is not available in synced history.</p>
+          <p>The result you asked for is not available in saved history.</p>
           <Link to="/history" className="button button--primary">
             View History
           </Link>

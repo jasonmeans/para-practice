@@ -1,15 +1,12 @@
 import { NavLink } from 'react-router-dom'
 import { APP_SUBTITLE, APP_TITLE } from '../data/constants'
-import type { ActiveSession, ThemePreference } from '../types'
-import { ThemeToggle } from './ThemeToggle'
+import type { ActiveSession } from '../types'
 
 interface AppLayoutProps {
   activeSession?: ActiveSession
   attemptCount: number
   notice?: string | null
   userEmail: string
-  themePreference: ThemePreference
-  onThemeChange: (preference: ThemePreference) => void
   onSignOut: () => Promise<void>
   children: React.ReactNode
 }
@@ -19,8 +16,6 @@ export function AppLayout({
   attemptCount,
   notice,
   userEmail,
-  themePreference,
-  onThemeChange,
   onSignOut,
   children,
 }: AppLayoutProps) {
@@ -37,13 +32,9 @@ export function AppLayout({
           </div>
 
           <div className="site-header__controls">
-            <ThemeToggle
-              preference={themePreference}
-              onChange={onThemeChange}
-            />
             <div className="site-header__meta">
               <span className="meta-pill meta-pill--active">
-                Synced across devices
+                Progress saved
               </span>
               <span className="meta-pill">{attemptCount} attempts saved</span>
               {activeSession ? (

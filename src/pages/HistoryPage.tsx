@@ -64,7 +64,7 @@ export function HistoryPage({
 
   async function clearAll() {
     const confirmed = window.confirm(
-      'Clear all synced attempts and any saved in-progress session for this account?'
+      'Clear all saved attempts and any saved in-progress session for this account?'
     )
 
     if (!confirmed) {
@@ -83,7 +83,7 @@ export function HistoryPage({
       <section className="page-band page-band--intro">
         <div className="shell-inner two-column-band">
           <div>
-            <p className="eyebrow">Synced progress</p>
+            <p className="eyebrow">Saved progress</p>
             <h1>History and trends</h1>
             <p className="lede">{STORAGE_NOTE}</p>
           </div>
@@ -132,7 +132,7 @@ export function HistoryPage({
             onClick={() => void clearAll()}
             disabled={attempts.length === 0}
           >
-            Clear synced history
+            Clear saved history
           </button>
           <input
             ref={fileInputRef}
@@ -260,7 +260,7 @@ export function HistoryPage({
           <div className="shell-inner empty-state">
             <h2>No attempts yet</h2>
             <p>
-              Take a short quiz to start building your synced trend history.
+              Take a short quiz to start building your saved trend history.
             </p>
           </div>
         </section>

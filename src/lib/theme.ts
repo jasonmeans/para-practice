@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { THEME_STORAGE_KEY } from '../data/constants'
-import type { ResolvedTheme, ThemePreference } from '../types'
+import { useEffect, useState } from 'react'
+import type { ResolvedTheme } from '../types'
 
 function canUseBrowser() {
   return typeof window !== 'undefined' && typeof document !== 'undefined'
@@ -22,39 +21,8 @@ function getSystemDarkPreference() {
   return getColorSchemeMediaQuery()?.matches ?? false
 }
 
-function getStoredThemePreference(): ThemePreference {
-  if (!canUseBrowser()) {
-    return 'system'
-  }
-
-  let storedValue: string | null = null
-
-  try {
-    storedValue = window.localStorage.getItem(THEME_STORAGE_KEY)
-  } catch {
-    return 'system'
-  }
-
-  if (
-    storedValue === 'system' ||
-    storedValue === 'light' ||
-    storedValue === 'dark'
-  ) {
-    return storedValue
-  }
-
-  return 'system'
-}
-
-export function resolveTheme(
-  preference: ThemePreference,
-  systemPrefersDark: boolean
-): ResolvedTheme {
-  if (preference === 'system') {
-    return systemPrefersDark ? 'dark' : 'light'
-  }
-
-  return preference
+export function resolveTheme(systemPrefersDark: boolean): ResolvedTheme {
+  return systemPrefersDark ? 'dark' : 'light'
 }
 
 function applyTheme(resolvedTheme: ResolvedTheme) {
@@ -67,11 +35,8 @@ function applyTheme(resolvedTheme: ResolvedTheme) {
 }
 
 export function useThemePreference() {
-  const [preference, setPreference] = useState<ThemePreference>(() =>
-    getStoredThemePreference()
-  )
-  const [systemPrefersDark, setSystemPrefersDark] = useState(() =>
-    getSystemDarkPreference()
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
+    resolveTheme(getSystemDarkPreference())
   )
 
   useEffect(() => {
@@ -82,7 +47,7 @@ export function useThemePreference() {
     }
 
     function handleChange(event: MediaQueryListEvent) {
-      setSystemPrefersDark(event.matches)
+      setResolvedTheme(resolveTheme(event.matches))
     }
 
     if (typeof mediaQuery.addEventListener === 'function') {
@@ -98,30 +63,9 @@ export function useThemePreference() {
     return undefined
   }, [])
 
-  const resolvedTheme = useMemo(
-    () => resolveTheme(preference, systemPrefersDark),
-    [preference, systemPrefersDark]
-  )
-
-  useEffect(() => {
-    if (!canUseBrowser()) {
-      return
-    }
-
-    try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, preference)
-    } catch {
-      // Ignore blocked storage environments such as stricter in-app browsers.
-    }
-  }, [preference])
-
   useEffect(() => {
     applyTheme(resolvedTheme)
   }, [resolvedTheme])
 
-  return {
-    preference,
-    resolvedTheme,
-    setPreference,
-  }
+  return resolvedTheme
 }

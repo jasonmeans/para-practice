@@ -44,12 +44,12 @@ export function AuthPage({
           <p className="eyebrow">For Dove</p>
           <h1>A calm, steady place to finish strong.</h1>
           <p className="lede">
-            Sign in once and your progress, results, and saved test sessions can
-            follow you from desktop to phone and back again.
+            Sign in once and your progress, results, and saved test sessions
+            stay ready when you come back.
           </p>
           <p className="storage-note">
-            Practice history lives in the backend for this account. Only your
-            sign-in session and theme preference stay in the browser.
+            Practice history is stored by the app for this account. Only your
+            sign-in session stays in the browser.
           </p>
         </div>
 
@@ -132,7 +132,7 @@ export function AuthPage({
                 {loading
                   ? 'Working...'
                   : mode === 'sign-in'
-                    ? 'Sign in and sync'
+                    ? 'Sign in'
                     : 'Create account'}
               </button>
             </form>

@@ -2,13 +2,13 @@
 
 ## Overview
 
-Dove's ParaPro Practice is a polished study website for one learner preparing for ParaPro (1755). It offers original mixed tests, section quizzes, backend-synced history, cross-device resume, trend charts, and study insights in a calm light/dark experience that follows system settings by default.
+Dove's ParaPro Practice is a polished study website for one learner preparing for ParaPro (1755). It offers original mixed tests, section quizzes, saved history, resumable sessions, trend charts, and study insights in a calm light/dark experience that follows system settings by default.
 
 This project is an unofficial study aid. It is not affiliated with ETS, does not use official paid test items, and does not predict or claim an official score.
 
 ## Why this project exists
 
-The goal is to give one learner a steady, encouraging place to practice, review misses, and pick up right where she left off whether she opens the site on a phone, desktop, or another browser.
+The goal is to give one learner a steady, encouraging place to practice, review misses, and pick up right where she left off whenever she comes back.
 
 ## Copyright and non-affiliation note
 
@@ -22,15 +22,15 @@ The goal is to give one learner a steady, encouraging place to practice, review 
 - Full mixed practice tests with randomized question order
 - Section quizzes for reading, writing, math, and classroom application
 - Weak-area and missed-questions review modes
-- Backend-synced pause and resume across browsers and devices
+- Account-backed pause and resume
 - Detailed results with explanations and recommended focus areas
-- Account-backed history synced through Supabase
+- Saved history through a ready-to-run local backend
 - Score trend and section trend charts
 - Study insights for strongest sections, weakest sections, recurring errors, and momentum
 - JSON export and import for backup and restore
 - Responsive phone-friendly practice flow
-- Light and dark themes with system sync and a manual override
-- GitHub Pages deployment via GitHub Actions
+- Light and dark themes that follow the system setting automatically
+- Optional Supabase-backed GitHub Pages deployment via GitHub Actions
 
 ## Architecture
 
@@ -39,7 +39,8 @@ The goal is to give one learner a steady, encouraging place to practice, review 
 - Vite
 - React
 - TypeScript
-- Supabase Auth + Postgres
+- Node local backend for ready-to-run account storage
+- Supabase Auth + Postgres for hosted deployments
 - Recharts
 - Vitest
 - ESLint + Prettier
@@ -50,15 +51,18 @@ The goal is to give one learner a steady, encouraging place to practice, review 
 - [`src/lib/quiz/engine.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/quiz/engine.ts): quiz generation and adaptive weighting
 - [`src/lib/quiz/scoring.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/quiz/scoring.ts): scoring and result summaries
 - [`src/lib/insights/analyze.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/insights/analyze.ts): long-term study insights
-- [`src/lib/backend/historyService.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/backend/historyService.ts): synced attempt/session storage plus import/export
-- [`src/lib/supabase/client.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/supabase/client.ts): backend client setup
+- [`src/lib/backend/authService.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/backend/authService.ts): auth routing between local backend and Supabase
+- [`src/lib/backend/historyService.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/backend/historyService.ts): saved attempt/session storage plus import/export
+- [`src/lib/supabase/client.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/supabase/client.ts): hosted backend client setup
 - [`src/lib/theme.ts`](/Users/jasonmeans/code/personal/para-practice/src/lib/theme.ts): system-aware theme behavior
+- [`server/index.mjs`](/Users/jasonmeans/code/personal/para-practice/server/index.mjs): local account and history API plus static app server
 - [`supabase/migrations/20260418_backend_sync.sql`](/Users/jasonmeans/code/personal/para-practice/supabase/migrations/20260418_backend_sync.sql): database schema and RLS policies
 
 ### Data storage
 
-- Attempt history and active sessions live in Supabase tables protected by row-level security.
-- The browser keeps only the auth session and theme preference locally.
+- By default, attempt history and active sessions live in [`~/.para-practice-local/store.json`](/Users/jasonmeans/.para-practice-local/store.json) through the bundled local backend.
+- When Supabase browser credentials are provided at build time, the app switches to Supabase Auth + Postgres instead.
+- The browser keeps only the auth session locally.
 - JSON export/import remains available for backup and restore.
 
 ## Local development
@@ -69,36 +73,37 @@ The goal is to give one learner a steady, encouraging place to practice, review 
    npm ci
    ```
 
-2. Copy the env template:
+2. Build the app:
 
    ```bash
-   cp .env.example .env.local
+   npm run build
    ```
 
-3. Create a Supabase project and copy:
-   - Project URL
-   - Publishable key
-
-4. Run the SQL in [`supabase/migrations/20260418_backend_sync.sql`](/Users/jasonmeans/code/personal/para-practice/supabase/migrations/20260418_backend_sync.sql) in the Supabase SQL editor.
-
-5. Put the values into `.env.local`:
+3. Start the bundled backend and static server:
 
    ```bash
-   VITE_SUPABASE_URL=...
-   VITE_SUPABASE_PUBLISHABLE_KEY=...
+   npm start
    ```
 
-6. In Supabase Auth settings:
-   - add `http://127.0.0.1:4173`
-   - add your GitHub Pages URL
-   - keep email/password auth enabled
-   - configure custom SMTP for production if you want reliable confirmation emails
+4. Open [http://127.0.0.1:3000](http://127.0.0.1:3000)
 
-7. Start the dev server:
+The local backend listens on the same origin as the app and writes account data to [`~/.para-practice-local/store.json`](/Users/jasonmeans/.para-practice-local/store.json).
 
-   ```bash
-   npm run dev
-   ```
+## Hosted Supabase mode
+
+If you want internet-hosted access through GitHub Pages, copy the env template:
+
+```bash
+cp .env.example .env.local
+```
+
+Then:
+
+1. create a Supabase project
+2. run the SQL in [`supabase/migrations/20260418_backend_sync.sql`](/Users/jasonmeans/code/personal/para-practice/supabase/migrations/20260418_backend_sync.sql)
+3. fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
+4. add the same values as GitHub repository secrets for the Pages workflow
+5. add your local and Pages URLs to Supabase Auth allowed redirects
 
 ## Testing
 
@@ -108,6 +113,8 @@ Run the quality checks:
 npm run lint
 npm run test
 npm run build
+npm run verify:local-backend
+npm run test:e2e
 ```
 
 ## Deployment
@@ -117,8 +124,11 @@ The repository includes a GitHub Actions workflow at [`.github/workflows/deploy-
 1. installs dependencies with `npm ci`
 2. runs lint
 3. runs tests
-4. builds the static site
-5. deploys the `dist` folder to GitHub Pages on push to `main`
+4. runs browser e2e coverage
+5. builds the static site
+6. deploys the `dist` folder to GitHub Pages on push to `main`
+
+The workflow automatically switches Vite into GitHub Pages base-path mode with `BUILD_TARGET=pages`.
 
 ### Manual GitHub setup
 
@@ -137,8 +147,9 @@ The app is configured for GitHub Pages-safe base pathing and hash routing.
 
 ## Data storage and privacy
 
-- Practice history and active sessions are stored in Supabase for the signed-in learner.
-- The browser stores only the auth session and theme preference locally.
+- In the default local mode, practice history and active sessions are stored in [`~/.para-practice-local/store.json`](/Users/jasonmeans/.para-practice-local/store.json) for the signed-in learner.
+- In hosted mode, practice history and active sessions are stored in Supabase for the signed-in learner.
+- The browser stores only the auth session locally.
 - Exporting history creates a JSON backup.
 - Importing history upserts attempts into the signed-in learner's backend account.
 
@@ -146,9 +157,9 @@ The app is configured for GitHub Pages-safe base pathing and hash routing.
 
 Use the History page to:
 
-- export synced attempts and the current saved session as JSON
+- export saved attempts and the current saved session as JSON
 - import a previous JSON backup into the current account
-- clear synced history after confirmation
+- clear saved history after confirmation
 
 ## Extending the question bank
 
@@ -183,7 +194,6 @@ The quiz engine is already structured to use future additions for better variety
 
 This repo also includes project control files for Codex-style execution:
 
-- [`CLAUDE.md`](/Users/jasonmeans/code/personal/para-practice/CLAUDE.md)
 - [`AGENTS.md`](/Users/jasonmeans/code/personal/para-practice/AGENTS.md)
 - [`MASTER-EXECUTION.md`](/Users/jasonmeans/code/personal/para-practice/MASTER-EXECUTION.md)
 - [`IMPLEMENTATION_PLAN.md`](/Users/jasonmeans/code/personal/para-practice/IMPLEMENTATION_PLAN.md)

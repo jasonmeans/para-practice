@@ -12,6 +12,7 @@ import {
   type RandomFn,
   weightedSampleWithoutReplacement,
 } from './random'
+import { createId } from '../utils/id'
 
 interface WeaknessProfile {
   recentQuestionIds: Set<string>
@@ -296,7 +297,7 @@ export function createQuizSession(
   const questionIds = selectedQuestions.map((question) => question.id)
 
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     startedAt: now,
     lastResumedAt: now,
     paused: false,

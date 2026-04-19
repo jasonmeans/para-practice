@@ -3,13 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useThemePreference } from './theme'
 
 function ThemeProbe() {
-  const { preference, resolvedTheme } = useThemePreference()
+  const resolvedTheme = useThemePreference()
 
-  return (
-    <p>
-      {preference}:{resolvedTheme}
-    </p>
-  )
+  return <p>{resolvedTheme}</p>
 }
 
 describe('useThemePreference', () => {
@@ -34,19 +30,22 @@ describe('useThemePreference', () => {
 
     render(<ThemeProbe />)
 
-    expect(screen.getByText('system:light')).toBeInTheDocument()
+    expect(screen.getByText('light')).toBeInTheDocument()
   })
 
-  it('keeps rendering when storage access throws', () => {
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-      throw new Error('storage blocked')
-    })
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('storage blocked')
+  it('follows a dark system preference', () => {
+    Object.defineProperty(window, 'matchMedia', {
+      value: vi.fn().mockImplementation(() => ({
+        matches: true,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      })),
+      configurable: true,
+      writable: true,
     })
 
     render(<ThemeProbe />)
 
-    expect(screen.getByText('system:light')).toBeInTheDocument()
+    expect(screen.getByText('dark')).toBeInTheDocument()
   })
 })

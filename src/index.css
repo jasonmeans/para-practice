@@ -426,15 +426,6 @@ select {
   color: var(--accent-strong);
 }
 
-.theme-toggle {
-  display: inline-flex;
-  padding: 0.2rem;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-}
-
-.theme-toggle__button,
 .auth-mode__button {
   min-height: 2.15rem;
   padding: 0.45rem 0.8rem;
@@ -445,7 +436,6 @@ select {
   text-transform: capitalize;
 }
 
-.theme-toggle__button.is-active,
 .auth-mode__button.is-active {
   background: color-mix(in srgb, var(--accent) 14%, var(--surface-strong));
   color: var(--text);

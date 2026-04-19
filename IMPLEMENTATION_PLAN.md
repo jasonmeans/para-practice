@@ -5,7 +5,8 @@
 - Vite
 - React
 - TypeScript
-- Supabase Auth + Postgres
+- Node local backend for ready-to-run storage
+- Supabase Auth + Postgres for hosted deployment
 - Recharts for trends
 - Vitest + Testing Library for tests
 - ESLint + Prettier
@@ -14,7 +15,8 @@
 
 - Vite gives a clean static build path and simple GitHub Pages deployment.
 - React + TypeScript keeps the UI modular without adding framework complexity.
-- Supabase keeps learner history on the backend so saved sessions can resume across browsers and devices.
+- A bundled Node backend makes the app usable immediately without external provisioning.
+- Supabase remains the hosted path when the app needs internet-facing access and managed Postgres storage.
 - Recharts handles responsive charts with minimal custom chart code.
 - Vitest integrates naturally with Vite and supports fast unit tests.
 
@@ -23,11 +25,12 @@
 - `src/data`: original question bank and static content
 - `src/lib/quiz`: quiz generation, scoring, and adaptive selection logic
 - `src/lib/insights`: performance summaries and recommendations
-- `src/lib/backend`: backend sync, import/export, and record mapping
-- `src/lib/supabase`: client setup
+- `src/lib/backend`: auth routing, persistence, import/export, and record mapping
+- `src/lib/supabase`: hosted client setup
 - `src/lib/theme`: system-synced theme handling
 - `src/components`: reusable UI pieces
 - `src/pages`: route-level screens for home, practice, history, and insights
+- `server`: local account and history API plus static asset hosting
 
 # Data Model
 
@@ -68,16 +71,17 @@ Attempt fields:
 
 # Persistence Strategy
 
-- Store completed attempts and active sessions in Supabase tables protected with row-level security.
+- Store completed attempts and active sessions in the local backend by default so the app works out of the box.
+- Switch to Supabase tables protected with row-level security when hosted credentials are present.
 - Keep import/export in JSON for portability and backups.
-- Require sign-in so history and active sessions can be retrieved on another device.
-- Support pause/resume by syncing the active session after each answer change and timer checkpoint.
+- Require sign-in so history and active sessions stay bound to a learner account.
+- Support pause/resume by saving the active session after each answer change and timer checkpoint.
 
 # Deployment Strategy
 
 - Use Vite static build output.
-- Configure `base` for GitHub Pages using the repository name in production.
-- Inject Supabase browser credentials at build time through local env vars and GitHub Actions secrets.
+- Use `/` as the default production base for the local server and switch to the repository base only for GitHub Pages builds.
+- Inject Supabase browser credentials only for the hosted build path through local env vars and GitHub Actions secrets.
 - Add a GitHub Actions workflow that installs dependencies, runs lint/tests/build, uploads the build artifact, and deploys to GitHub Pages on push to `main`.
 
 # Testing Strategy
@@ -101,7 +105,8 @@ Attempt fields:
 # Initial Assumptions
 
 - The frontend should stay static, with backend sync delegated to Supabase.
+- The shipped repo should work immediately without requiring the owner to provision external services first.
 - The repository name `para-practice` will be used for GitHub Pages base pathing.
 - A focused but sufficiently varied seed bank is better than a huge low-quality bank.
 - Adaptive behavior will be lightweight: weak domains get higher selection weight rather than a complex mastery engine.
-- Lightweight sign-in is acceptable because cross-device resume requires a persistent learner identity.
+- Lightweight sign-in is acceptable because saved progress should remain tied to a persistent learner identity.

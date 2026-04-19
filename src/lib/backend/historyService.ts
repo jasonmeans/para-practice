@@ -4,7 +4,8 @@ import type {
   HistoryExport,
   LearnerHistoryState,
 } from '../../types'
-import { requireSupabase } from '../supabase/client'
+import { localApiRequest } from './authService'
+import { hasSupabaseConfig, requireSupabase } from '../supabase/client'
 
 export interface AttemptRecord {
   id: string
@@ -95,6 +96,10 @@ function isNoRowsError(error: { code?: string } | null) {
 export async function fetchLearnerHistory(
   userId: string
 ): Promise<LearnerHistoryState> {
+  if (!hasSupabaseConfig) {
+    return localApiRequest<LearnerHistoryState>('/api/history')
+  }
+
   const client = requireSupabase()
   const [
     { data: attemptsData, error: attemptsError },
@@ -127,6 +132,14 @@ export async function fetchLearnerHistory(
 }
 
 export async function saveAttempt(userId: string, attempt: Attempt) {
+  if (!hasSupabaseConfig) {
+    await localApiRequest('/api/history/attempts', {
+      method: 'PUT',
+      body: JSON.stringify({ attempt }),
+    })
+    return
+  }
+
   const client = requireSupabase()
   const record = toAttemptRecord(userId, attempt)
   const { error } = await client.from('attempts').upsert(record, {
@@ -142,6 +155,14 @@ export async function saveActiveSession(
   userId: string,
   session: ActiveSession
 ) {
+  if (!hasSupabaseConfig) {
+    await localApiRequest('/api/history/active-session', {
+      method: 'PUT',
+      body: JSON.stringify({ session }),
+    })
+    return
+  }
+
   const client = requireSupabase()
   const record = toActiveSessionRecord(userId, session)
   const { error } = await client.from('active_sessions').upsert(record, {
@@ -154,6 +175,13 @@ export async function saveActiveSession(
 }
 
 export async function clearActiveSession(userId: string) {
+  if (!hasSupabaseConfig) {
+    await localApiRequest('/api/history/active-session', {
+      method: 'DELETE',
+    })
+    return
+  }
+
   const client = requireSupabase()
   const { error } = await client
     .from('active_sessions')
@@ -166,6 +194,13 @@ export async function clearActiveSession(userId: string) {
 }
 
 export async function clearAllHistory(userId: string) {
+  if (!hasSupabaseConfig) {
+    await localApiRequest('/api/history', {
+      method: 'DELETE',
+    })
+    return
+  }
+
   const client = requireSupabase()
   const [{ error: attemptsError }, { error: sessionError }] = await Promise.all(
     [
@@ -196,11 +231,23 @@ export function exportHistory(
 }
 
 export async function importHistory(userId: string, payload: HistoryExport) {
-  const client = requireSupabase()
-
   if (!isHistoryExport(payload)) {
     throw new Error('Invalid history file')
   }
+
+  if (!hasSupabaseConfig) {
+    const response = await localApiRequest<{ imported: number }>(
+      '/api/history/import',
+      {
+        method: 'POST',
+        body: JSON.stringify({ payload }),
+      }
+    )
+
+    return response.imported
+  }
+
+  const client = requireSupabase()
 
   if (payload.attempts.length > 0) {
     const attemptRecords = payload.attempts.map((attempt) =>

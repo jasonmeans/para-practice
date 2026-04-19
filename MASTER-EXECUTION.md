@@ -1,10 +1,10 @@
 # Product Vision
 
-Create a calm, polished ParaPro (1755) study website that helps one learner practice with original questions, sync progress across devices, and choose next study steps with confidence.
+Create a calm, polished ParaPro (1755) study website that helps one learner practice with original questions, save progress through a backend account, and choose next study steps with confidence.
 
 # Goals
 
-- Deliver a complete practice experience with backend-backed sync for one learner across devices.
+- Deliver a complete practice experience with backend-backed sign-in, saved progress, and resumable study sessions for one learner.
 - Provide original mixed tests, section quizzes, and adaptive weak-area study modes.
 - Persist attempts in the backend and surface trends and actionable study insights.
 - Ship automated GitHub Pages deployment with clean CI checks.
@@ -18,8 +18,7 @@ Status: `completed`
 
 Tasks:
 
-- Create `CLAUDE.md`
-- Create `AGENTS.md`
+- Create unified `AGENTS.md` operating guidance
 - Create `IMPLEMENTATION_PLAN.md`
 - Create `daily.md`
 - Create `COMMS.md`
@@ -56,7 +55,7 @@ Tasks:
 - Add original seed question bank
 - Implement randomized quiz generation
 - Implement scoring and answer review
-- Support backend-synced pause/resume
+- Support backend-saved pause/resume
 
 Verification:
 
@@ -77,7 +76,7 @@ Tasks:
 
 Verification:
 
-- Attempts persist across devices after sign-in
+- Attempts persist after sign-in through the active backend
 - Trend charts render from stored data
 - Weak-area recommendations update from history
 - Unit tests cover persistence and insights logic
@@ -108,7 +107,14 @@ Verification:
 # Status Tracking
 
 - Active milestone: None
-- Next milestone: Roadmap follow-up items only
+- Next milestone: Optional hosted Supabase rollout only
+
+# Release Validation
+
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- `npm run verify:local-backend`
 
 # Risks and Mitigations
 
@@ -126,4 +132,4 @@ Mitigation: Configure Vite base path intentionally and verify workflow output pa
 
 ## Risk: Backend setup friction
 
-Mitigation: Keep the backend surface small, provide a ready-to-run SQL migration, and document GitHub secrets plus local `.env` requirements clearly.
+Mitigation: Keep the backend surface small, ship a ready-to-run local backend for immediate use, and retain documented Supabase setup for hosted deployments.

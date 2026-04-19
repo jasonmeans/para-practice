@@ -8,6 +8,7 @@ import type {
   SectionScore,
 } from '../../types'
 import { getElapsedSeconds } from './session'
+import { createId } from '../utils/id'
 
 function buildSectionBreakdown(answers: AttemptAnswer[]): SectionScore[] {
   const sectionMap = new Map<Section, { correct: number; total: number }>()
@@ -94,7 +95,7 @@ export function scoreSession(
     .map(([topic]) => topic)
 
   return {
-    id: crypto.randomUUID(),
+    id: createId(),
     startedAt: session.startedAt,
     completedAt: now,
     mode: session.config.mode,

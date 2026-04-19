@@ -35,3 +35,21 @@ Subject: Dove personalization and cross-device sync
 Decision or request: Update the learner experience with Dove-themed visuals, explicit light and dark theme behavior, and backend-backed history so attempts and saved sessions can continue across phone and desktop.  
 Status: Closed  
 Follow-up needed: Repo owner should provision Supabase credentials and run the provided SQL migration.
+
+## 2026-04-18 14:40 PT
+
+From: Orchestrator  
+To: QA Engineer, Data/Persistence Engineer, Deployment Engineer  
+Subject: Ready-to-run backend completion  
+Decision or request: Ship the bundled local backend as the default runtime so the app works immediately, keep Supabase as the hosted path, and verify that account creation plus saved attempts and sessions round-trip through the backend.  
+Status: Closed  
+Follow-up needed: Changed `src/lib/backend/authService.ts`, `src/lib/backend/historyService.ts`, `src/App.tsx`, `server/index.mjs`, and `vite.config.ts`; verified `npm run lint`, `npm run test`, `npm run build`, and `npm run verify:local-backend`; optional hosted Supabase rollout remains open only if internet deployment is needed later.
+
+## 2026-04-18 16:20 PT
+
+From: QA Engineer  
+To: Orchestrator, Frontend Engineer  
+Subject: Theme simplification and browser validation  
+Decision or request: Remove the manual light/dark switch so the UI follows the system setting only, and add browser e2e coverage around sign-up, full-test launch, pause/resume, and history backup flows.  
+Status: Closed  
+Follow-up needed: Changed `src/lib/theme.ts`, `src/components/AppLayout.tsx`, `src/App.tsx`, `playwright.config.ts`, and `e2e/app.spec.ts`; verified `npm run lint`, `npm run test`, `npm run build`, and `npm run test:e2e`; live service should be restarted so the running app matches the new build.
