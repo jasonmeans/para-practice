@@ -180,5 +180,13 @@ describe('analyzeAttempts', () => {
     expect(insights.recurringTopics[0].topic).toBe('fractions')
     expect(insights.trendDirection).toBe('improving')
     expect(insights.recommendedFocusAreas[0]).toContain('Math')
+    expect(insights.recommendedFocusAreas).toContain('Topic focus: fractions')
+    expect(insights.recommendedFocusAreas).toContain('Topic focus: grammar')
+    expect(insights.recommendedFocusAreas.join('\n')).not.toContain(
+      '[object Object]'
+    )
+    expect(insights.recommendedFocusAreas).not.toContain(
+      'Topic focus: behavior'
+    )
   })
 })

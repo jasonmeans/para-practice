@@ -185,3 +185,26 @@ Validation completed:
 Next steps:
 
 - Move the public backend to hosted Supabase later so the published site no longer depends on the local machine staying online
+
+## 2026-04-19 - Insights rendering cleanup
+
+Current focus:
+
+- Fix the study insight recommendations so topic focus rows render readable labels
+- Keep the change scoped to the analyzer and its regression coverage
+
+Tasks completed:
+
+- Updated learner insights to format recurring topic names instead of object values
+- Limited topic-focus recommendations to topics with recorded misses
+- Added a regression assertion to catch `[object Object]` output
+
+Validation completed:
+
+- Verified `npm run lint`
+- Verified `npm run test`
+- Verified `npm run build`
+
+Next steps:
+
+- Monitor the deployed site after the `main` push completes

@@ -153,7 +153,10 @@ export function analyzeAttempts(attempts: Attempt[]): LearnerInsights {
 
   const recommendedFocusAreas = [
     `${SECTION_LABELS[weakestSection.section]}: rebuild fluency with short sets.`,
-    ...recurringTopics.slice(0, 3).map((topic) => `Topic focus: ${topic}`),
+    ...recurringTopics
+      .filter((topic) => topic.misses > 0)
+      .slice(0, 3)
+      .map(({ topic }) => `Topic focus: ${topic}`),
   ]
 
   const studyTips = [

@@ -80,3 +80,12 @@ Subject: Public login bridge recovery
 Decision or request: Fixed the published login failure by moving the public backend bridge off rotating localhost.run URLs and onto the currently running Cloudflare quick tunnel, while also translating generic browser fetch errors into a clearer saved-progress-service message. The live issue came from the old public bundle pointing at a dead tunnel host and the tunnel automation failing to sync because `gh` was no longer authenticated.  
 Status: Closed  
 Follow-up needed: Changed `src/lib/backend/publicBridge.ts`, `src/lib/backend/authService.ts`, `src/lib/utils/error.ts`, `server/index.mjs`, and `scripts/public-backend-daemon.mjs`, plus added tests in `src/lib/backend/publicBridge.test.ts` and `src/lib/utils/error.test.ts`; verified `npm run lint`, `npm run test`, `npm run test:e2e`, Cloudflare tunnel CORS health checks, and a Pages-targeted build before redeploy.
+
+## 2026-04-19 09:17 PT
+
+From: QA Engineer  
+To: Orchestrator, Frontend Engineer  
+Subject: Insights topic focus rendering fix  
+Decision or request: Fixed the learner insights summary so recommended topic focus items render topic labels instead of stringifying whole topic objects, and now only recommend topics with actual misses.  
+Status: Closed  
+Follow-up needed: Changed `src/lib/insights/analyze.ts` and `src/lib/insights/analyze.test.ts`; verified `npm run lint`, `npm run test`, and `npm run build` before shipping.
