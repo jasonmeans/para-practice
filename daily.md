@@ -130,3 +130,31 @@ Next steps:
 
 - Keep the local backend host machine online so the public bridge remains reachable
 - Replace the tunnel bridge with hosted Supabase later if a permanent backend is desired
+
+## 2026-04-18 - ParaPro alignment refresh
+
+Current focus:
+
+- Compare the current practice mix against official ETS/Washington guidance and recent test-taker reports
+- Make the practice flow feel closer to the real ParaPro experience without copying protected items
+- Tighten the on-screen chrome so more of the question stays visible
+
+Tasks completed:
+
+- Reviewed ETS ParaPro content guidance, Washington qualifying requirements, and recent community reports about topic emphasis
+- Added more math items for common-denominator fractions, percentages, area/perimeter, geometry, and PEMDAS-style order of operations
+- Updated the full-test selection logic so math appears more often and key math topic groups are intentionally represented
+- Changed the last-question footer button from `Next` to `Submit attempt`
+- Slimmed the top header so it takes less vertical space during practice
+
+Validation completed:
+
+- Verified `npm run lint`
+- Verified `npm run test`
+- Verified `npm run build`
+- Verified `npm run test:e2e`
+- Restarted the local launch-agent server and confirmed the last-question submit state on `http://127.0.0.1:3000`
+
+Next steps:
+
+- Keep expanding original math coverage, especially around no-calculator multi-step items, if more realism is needed after Dove tries the new mix

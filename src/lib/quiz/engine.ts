@@ -21,6 +21,20 @@ interface WeaknessProfile {
   topicMisses: Map<string, number>
 }
 
+const FULL_TEST_SECTION_SHARES: Record<Section, number> = {
+  reading: 0.25,
+  writing: 0.25,
+  math: 1 / 3,
+  'instructional-support': 1 / 6,
+}
+
+const FULL_TEST_MATH_FOCUS_GROUPS = [
+  new Set(['fractions', 'fraction-operation', 'common-denominator']),
+  new Set(['percentages', 'percent', 'equivalent-form']),
+  new Set(['geometry', 'area', 'perimeter']),
+  new Set(['order-of-operations', 'pemdas']),
+]
+
 function sortAttemptsByDate(attempts: Attempt[]) {
   return [...attempts].sort(
     (left, right) =>
@@ -84,14 +98,30 @@ function getQuestionWeight(question: Question, profile: WeaknessProfile) {
     Math.max(0, 100 - profile.sectionAccuracy[question.section]) / 25
   const topicNeed = (profile.topicMisses.get(question.topic) ?? 0) * 0.35
   const missedBoost = profile.missedQuestionIds.has(question.id) ? 0.8 : 0
+  const focusBoost = isMathFocusQuestion(question) ? 0.45 : 0
   const difficultyBoost =
     question.difficulty === 'core'
-      ? 0.1
-      : question.difficulty === 'stretch'
+      ? question.section === 'math'
         ? 0.2
+        : 0.1
+      : question.difficulty === 'stretch'
+        ? question.section === 'math'
+          ? 0.35
+          : 0.2
         : 0
 
-  return 1 + sectionNeed + topicNeed + missedBoost + difficultyBoost
+  return 1 + sectionNeed + topicNeed + missedBoost + focusBoost + difficultyBoost
+}
+
+function hasAnyTag(question: Question, tags: Set<string>) {
+  return question.tags.some((tag) => tags.has(tag))
+}
+
+function isMathFocusQuestion(question: Question) {
+  return (
+    question.section === 'math' &&
+    FULL_TEST_MATH_FOCUS_GROUPS.some((tags) => hasAnyTag(question, tags))
+  )
 }
 
 function selectFromPool(
@@ -137,32 +167,50 @@ function buildFullTestSelection(
   profile: WeaknessProfile,
   random: RandomFn
 ) {
-  const baseCount = Math.floor(config.count / SECTIONS.length)
-  const remainder = config.count % SECTIONS.length
-  const prioritySections = [...SECTIONS].sort(
-    (left, right) =>
-      profile.sectionAccuracy[left] - profile.sectionAccuracy[right]
-  )
-
   const quotas = SECTIONS.reduce<Record<Section, number>>(
     (accumulator, section) => {
-      accumulator[section] = baseCount
+      accumulator[section] = Math.floor(config.count * FULL_TEST_SECTION_SHARES[section])
       return accumulator
     },
     {} as Record<Section, number>
   )
+
+  const allocated = Object.values(quotas).reduce(
+    (sum, current) => sum + current,
+    0
+  )
+  const remainder = config.count - allocated
+  const prioritySections = [...SECTIONS].sort((left, right) => {
+    const shareDelta =
+      config.count * FULL_TEST_SECTION_SHARES[right] -
+      quotas[right] -
+      (config.count * FULL_TEST_SECTION_SHARES[left] - quotas[left])
+
+    if (shareDelta !== 0) {
+      return shareDelta
+    }
+
+    return profile.sectionAccuracy[left] - profile.sectionAccuracy[right]
+  })
 
   for (let index = 0; index < remainder; index += 1) {
     quotas[prioritySections[index]] += 1
   }
 
   const selected = SECTIONS.flatMap((section) =>
-    selectFromPool(
-      questions.filter((question) => question.section === section),
-      quotas[section],
-      profile,
-      random
-    )
+    section === 'math'
+      ? selectMathFullTestQuestions(
+          questions.filter((question) => question.section === section),
+          quotas[section],
+          profile,
+          random
+        )
+      : selectFromPool(
+          questions.filter((question) => question.section === section),
+          quotas[section],
+          profile,
+          random
+        )
   )
 
   if (selected.length >= config.count) {
@@ -182,6 +230,60 @@ function buildFullTestSelection(
         profile,
         random
       ),
+    ],
+    random
+  )
+}
+
+function selectMathFullTestQuestions(
+  pool: Question[],
+  count: number,
+  profile: WeaknessProfile,
+  random: RandomFn
+) {
+  if (count <= 0) {
+    return []
+  }
+
+  const selected: Question[] = []
+
+  for (const focusTags of FULL_TEST_MATH_FOCUS_GROUPS) {
+    if (selected.length >= count) {
+      break
+    }
+
+    const focusPool = pool.filter(
+      (question) =>
+        hasAnyTag(question, focusTags) &&
+        !selected.some((candidate) => candidate.id === question.id)
+    )
+    const freshFocusPool = focusPool.filter(
+      (question) => !profile.recentQuestionIds.has(question.id)
+    )
+    const [picked] = weightedSampleWithoutReplacement(
+      freshFocusPool.length > 0 ? freshFocusPool : focusPool,
+      1,
+      (question) => getQuestionWeight(question, profile),
+      random
+    )
+
+    if (picked) {
+      selected.push(picked)
+    }
+  }
+
+  if (selected.length >= count) {
+    return shuffle(selected.slice(0, count), random)
+  }
+
+  const fillPool = pool.filter(
+    (question) => !selected.some((candidate) => candidate.id === question.id)
+  )
+
+  return shuffle(
+    [
+      ...selected,
+      ...selectFromPool(fillPool, count - selected.length, profile, random),
     ],
     random
   )

@@ -62,3 +62,12 @@ Subject: Public Pages rollout with backend bridge
 Decision or request: Published the repo to GitHub Pages, added cross-origin token support for the bundled backend, and installed a local tunnel daemon so the Pages build can keep talking to the backend without manual secret edits.  
 Status: Closed  
 Follow-up needed: Changed `server/index.mjs`, `src/lib/backend/authService.ts`, `.github/workflows/deploy-pages.yml`, `index.html`, and `scripts/public-backend-daemon.mjs`; verified `npm run lint`, `npm run test`, `npm run build`, `npm run verify:local-backend`, `npm run test:e2e`, a Pages workflow deploy, backend tunnel health, and a live browser smoke against the public URL.
+
+## 2026-04-18 18:35 PT
+
+From: Product Manager, QA Engineer  
+To: Orchestrator  
+Subject: ParaPro alignment refresh for Washington learner  
+Decision or request: Rebalanced the full-practice selection and expanded the math bank after checking ETS and Washington guidance plus recent test-taker reports. The updated practice flow now leans harder toward fractions, percentages, order of operations, area/perimeter, and basic geometry, which matched both the official study plan and repeated community feedback.  
+Status: Closed  
+Follow-up needed: Changed `src/lib/quiz/engine.ts`, `src/data/questions.ts`, `src/pages/PracticePage.tsx`, `src/components/AppLayout.tsx`, `src/index.css`, and new tests in `src/pages/PracticePage.test.tsx` plus `e2e/app.spec.ts`; verified `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e`, and a restarted local smoke on `http://127.0.0.1:3000`.

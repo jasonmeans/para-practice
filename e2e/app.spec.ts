@@ -121,6 +121,24 @@ test('persists a paused session across sign-out and sign-in', async ({
   ).toBeChecked()
 })
 
+test('shows submit in the footer on the last question', async ({ page }) => {
+  await createAccount(page, buildEmail('last-question-submit'))
+
+  await page.getByRole('button', { name: 'Start Section Quiz' }).click()
+  await expect(page).toHaveURL(/#\/practice$/)
+
+  await page.locator('.question-nav__button').last().click()
+
+  await expect(
+    page.locator('.practice-footer').getByRole('button', {
+      name: 'Submit attempt',
+    })
+  ).toBeVisible()
+  await expect(
+    page.locator('.practice-footer').getByRole('button', { name: 'Next' })
+  ).toHaveCount(0)
+})
+
 test('exports, clears, and re-imports saved history', async ({
   page,
 }, testInfo) => {

@@ -329,7 +329,6 @@ export default function App() {
     <HashRouter>
       <AppLayout
         activeSession={activeSession}
-        attemptCount={attempts.length}
         notice={saveError}
         userEmail={session.user.email ?? 'Signed in'}
         onSignOut={handleSignOut}

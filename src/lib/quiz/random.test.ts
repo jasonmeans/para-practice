@@ -68,7 +68,40 @@ const pool: Question[] = [
     options: ['A', 'B', 'C', 'D'],
     correctAnswer: 1,
     explanation: 'x',
-    tags: [],
+    tags: ['fractions', 'fraction-operation'],
+  },
+  {
+    id: 'm3',
+    section: 'math',
+    topic: 'percentages',
+    difficulty: 'core',
+    prompt: 'm3',
+    options: ['A', 'B', 'C', 'D'],
+    correctAnswer: 1,
+    explanation: 'x',
+    tags: ['percentages', 'percent'],
+  },
+  {
+    id: 'm4',
+    section: 'math',
+    topic: 'geometry',
+    difficulty: 'core',
+    prompt: 'm4',
+    options: ['A', 'B', 'C', 'D'],
+    correctAnswer: 1,
+    explanation: 'x',
+    tags: ['geometry', 'area'],
+  },
+  {
+    id: 'm5',
+    section: 'math',
+    topic: 'order of operations',
+    difficulty: 'core',
+    prompt: 'm5',
+    options: ['A', 'B', 'C', 'D'],
+    correctAnswer: 1,
+    explanation: 'x',
+    tags: ['order-of-operations', 'pemdas'],
   },
   {
     id: 'i1',
@@ -195,5 +228,34 @@ describe('quiz engine', () => {
     expect(selected.some((question) => question.topic === 'fractions')).toBe(
       true
     )
+  })
+
+  it('gives full tests more math than instructional-support and covers key math areas', () => {
+    const selected = selectQuizQuestions(
+      {
+        mode: 'full-test',
+        count: 8,
+        title: 'Full Practice Test',
+      },
+      pool,
+      priorAttempts,
+      createSeededRandom(3)
+    )
+
+    const mathQuestions = selected.filter((question) => question.section === 'math')
+    const supportQuestions = selected.filter(
+      (question) => question.section === 'instructional-support'
+    )
+
+    expect(mathQuestions.length).toBeGreaterThan(supportQuestions.length)
+    expect(mathQuestions.some((question) => question.topic === 'fractions')).toBe(
+      true
+    )
+    expect(
+      mathQuestions.some(
+        (question) =>
+          question.topic === 'percentages' || question.topic === 'geometry'
+      )
+    ).toBe(true)
   })
 })

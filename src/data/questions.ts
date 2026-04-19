@@ -583,7 +583,7 @@ export const questionBank: Question[] = [
     correctAnswer: 1,
     explanation:
       'When fractions have the same denominator, add the numerators: 1 + 2 = 3, so the sum is 3/4.',
-    tags: ['fractions', 'addition'],
+    tags: ['fractions', 'fraction-operation', 'addition', 'common-denominator'],
   }),
   makeQuestion({
     id: 'math-002',
@@ -609,7 +609,7 @@ export const questionBank: Question[] = [
     correctAnswer: 1,
     explanation:
       'Twenty-five percent of $6.00 is $1.50. Subtracting the discount gives $4.50.',
-    tags: ['percentages', 'money'],
+    tags: ['percentages', 'percent', 'money'],
   }),
   makeQuestion({
     id: 'math-004',
@@ -782,7 +782,141 @@ export const questionBank: Question[] = [
     options: ['3 cups', '8 cups', '9 cups', '16 cups'],
     correctAnswer: 2,
     explanation: 'Three-fourths of 12 is 12 ÷ 4 = 3, then 3 × 3 = 9 cups.',
-    tags: ['fractions', 'multiplication', 'word-problems'],
+    tags: ['fractions', 'fraction-operation', 'multiplication', 'word-problems'],
+  }),
+  makeQuestion({
+    id: 'math-017',
+    section: 'math',
+    topic: 'fraction subtraction',
+    difficulty: 'foundation',
+    prompt: 'What is 7/8 - 3/8?',
+    options: ['3/8', '4/8', '4/16', '1/8'],
+    correctAnswer: 1,
+    explanation:
+      'Because the denominators are the same, subtract the numerators: 7 - 3 = 4, so the result is 4/8, which is also equal to 1/2.',
+    tags: ['fractions', 'fraction-operation', 'subtraction', 'common-denominator'],
+  }),
+  makeQuestion({
+    id: 'math-018',
+    section: 'math',
+    topic: 'fraction addition',
+    difficulty: 'core',
+    prompt:
+      'A student read 2/6 of a chapter before lunch and 3/6 after lunch. How much of the chapter did the student read altogether?',
+    options: ['5/6', '5/12', '1/2', '6/5'],
+    correctAnswer: 0,
+    explanation:
+      'When the denominators match, add the numerators: 2 + 3 = 5, so the student read 5/6 of the chapter.',
+    tags: ['fractions', 'fraction-operation', 'addition', 'common-denominator', 'word-problems'],
+  }),
+  makeQuestion({
+    id: 'math-019',
+    section: 'math',
+    topic: 'percentages',
+    difficulty: 'core',
+    prompt: 'What is 35% of 80?',
+    options: ['18', '24', '28', '35'],
+    correctAnswer: 2,
+    explanation:
+      'Ten percent of 80 is 8, so 30% is 24 and 5% is 4. Adding them gives 28.',
+    tags: ['percentages', 'percent', 'mental-math'],
+  }),
+  makeQuestion({
+    id: 'math-020',
+    section: 'math',
+    topic: 'equivalent forms',
+    difficulty: 'core',
+    prompt: 'Which set shows equivalent values?',
+    options: [
+      '1/2, 0.5, 50%',
+      '1/4, 0.4, 40%',
+      '3/5, 0.35, 35%',
+      '3/4, 0.6, 60%',
+    ],
+    correctAnswer: 0,
+    explanation:
+      'One-half is equal to 0.5, which is the same as 50%. The other choices mix values that are not equal.',
+    tags: ['fractions', 'percentages', 'equivalent-form', 'decimals'],
+  }),
+  makeQuestion({
+    id: 'math-021',
+    section: 'math',
+    topic: 'perimeter',
+    difficulty: 'foundation',
+    prompt:
+      'What is the perimeter of a rectangle that is 9 units long and 4 units wide?',
+    options: ['13 units', '18 units', '26 units', '36 units'],
+    correctAnswer: 2,
+    explanation:
+      'Perimeter is the distance around the figure: 9 + 4 + 9 + 4 = 26 units.',
+    tags: ['geometry', 'perimeter', 'measurement'],
+  }),
+  makeQuestion({
+    id: 'math-022',
+    section: 'math',
+    topic: 'parallelogram area',
+    difficulty: 'core',
+    prompt:
+      'A parallelogram has a base of 10 units and a height of 6 units. What is its area?',
+    options: [
+      '16 square units',
+      '30 square units',
+      '60 square units',
+      '120 square units',
+    ],
+    correctAnswer: 2,
+    explanation:
+      'Area of a parallelogram is base × height, so 10 × 6 = 60 square units.',
+    tags: ['geometry', 'area', 'measurement'],
+  }),
+  makeQuestion({
+    id: 'math-023',
+    section: 'math',
+    topic: 'geometry',
+    difficulty: 'foundation',
+    prompt: 'Which figure always has exactly four right angles?',
+    options: ['parallelogram', 'trapezoid', 'rectangle', 'rhombus'],
+    correctAnswer: 2,
+    explanation:
+      'A rectangle is defined as a quadrilateral with four right angles.',
+    tags: ['geometry', 'shape-properties'],
+  }),
+  makeQuestion({
+    id: 'math-024',
+    section: 'math',
+    topic: 'order of operations',
+    difficulty: 'core',
+    prompt: 'What is the value of (12 - 4) ÷ 2 + 3?',
+    options: ['7', '11', '13', '19'],
+    correctAnswer: 0,
+    explanation:
+      'Work inside the parentheses first: 12 - 4 = 8. Then divide by 2 to get 4, and add 3 for a total of 7.',
+    tags: ['order-of-operations', 'pemdas'],
+  }),
+  makeQuestion({
+    id: 'math-025',
+    section: 'math',
+    topic: 'geometry',
+    difficulty: 'core',
+    prompt:
+      'A triangle has angles measuring 50° and 60°. What is the measure of the third angle?',
+    options: ['70°', '80°', '90°', '110°'],
+    correctAnswer: 0,
+    explanation:
+      'The angles in a triangle add up to 180°, so the third angle is 180 - 50 - 60 = 70°.',
+    tags: ['geometry', 'angles', 'triangle'],
+  }),
+  makeQuestion({
+    id: 'math-026',
+    section: 'math',
+    topic: 'fractions',
+    difficulty: 'core',
+    prompt: 'Which expression is equal to 3/4 of 20?',
+    options: ['20 ÷ 4 + 3', '20 ÷ 4 × 3', '20 × 4 ÷ 3', '20 - 4 + 3'],
+    correctAnswer: 1,
+    explanation:
+      'To find 3/4 of 20, divide by 4 first and then multiply by 3: 20 ÷ 4 = 5 and 5 × 3 = 15.',
+    tags: ['fractions', 'fraction-operation', 'multiplication', 'word-problems'],
   }),
   makeQuestion({
     id: 'inst-001',

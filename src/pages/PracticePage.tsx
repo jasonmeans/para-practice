@@ -96,6 +96,7 @@ export function PracticePage({
 
   const answeredCount = countAnsweredQuestions(session)
   const totalQuestions = session.questionIds.length
+  const isLastQuestion = session.currentIndex === totalQuestions - 1
   const elapsedSeconds = session.paused
     ? session.elapsedSeconds
     : getElapsedSeconds(session, new Date(clock).toISOString())
@@ -254,13 +255,14 @@ export function PracticePage({
             type="button"
             className="button button--primary"
             onClick={() =>
-              void moveTo(
-                Math.min(totalQuestions - 1, session.currentIndex + 1)
-              )
+              isLastQuestion
+                ? void handleSubmit()
+                : void moveTo(
+                    Math.min(totalQuestions - 1, session.currentIndex + 1)
+                  )
             }
-            disabled={session.currentIndex === totalQuestions - 1}
           >
-            Next
+            {isLastQuestion ? 'Submit attempt' : 'Next'}
           </button>
         </div>
       </div>
