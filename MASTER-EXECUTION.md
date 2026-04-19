@@ -115,6 +115,8 @@ Verification:
 - `npm run test`
 - `npm run build`
 - `npm run verify:local-backend`
+- `npm run test:e2e`
+- Live GitHub Pages smoke test against the published URL
 
 # Risks and Mitigations
 
@@ -132,4 +134,4 @@ Mitigation: Configure Vite base path intentionally and verify workflow output pa
 
 ## Risk: Backend setup friction
 
-Mitigation: Keep the backend surface small, ship a ready-to-run local backend for immediate use, and retain documented Supabase setup for hosted deployments.
+Mitigation: Keep the backend surface small, ship a ready-to-run local backend for immediate use, retain documented Supabase setup for hosted deployments, and automate the Pages backend bridge so repo secret updates do not require manual redeploy steps.

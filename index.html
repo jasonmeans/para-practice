@@ -11,16 +11,10 @@
     <script>
       ;(() => {
         try {
-          const stored = localStorage.getItem('para-practice-theme-preference')
           const prefersDark = window.matchMedia(
             '(prefers-color-scheme: dark)'
           ).matches
-          const resolved =
-            stored === 'dark' || stored === 'light'
-              ? stored
-              : prefersDark
-                ? 'dark'
-                : 'light'
+          const resolved = prefersDark ? 'dark' : 'light'
           document.documentElement.dataset.theme = resolved
           document.documentElement.style.colorScheme = resolved
         } catch (_error) {}

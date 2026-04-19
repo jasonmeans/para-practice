@@ -53,3 +53,12 @@ Subject: Theme simplification and browser validation
 Decision or request: Remove the manual light/dark switch so the UI follows the system setting only, and add browser e2e coverage around sign-up, full-test launch, pause/resume, and history backup flows.  
 Status: Closed  
 Follow-up needed: Changed `src/lib/theme.ts`, `src/components/AppLayout.tsx`, `src/App.tsx`, `playwright.config.ts`, and `e2e/app.spec.ts`; verified `npm run lint`, `npm run test`, `npm run build`, and `npm run test:e2e`; live service should be restarted so the running app matches the new build.
+
+## 2026-04-18 17:10 PT
+
+From: Deployment Engineer  
+To: Orchestrator, QA Engineer  
+Subject: Public Pages rollout with backend bridge  
+Decision or request: Published the repo to GitHub Pages, added cross-origin token support for the bundled backend, and installed a local tunnel daemon so the Pages build can keep talking to the backend without manual secret edits.  
+Status: Closed  
+Follow-up needed: Changed `server/index.mjs`, `src/lib/backend/authService.ts`, `.github/workflows/deploy-pages.yml`, `index.html`, and `scripts/public-backend-daemon.mjs`; verified `npm run lint`, `npm run test`, `npm run build`, `npm run verify:local-backend`, `npm run test:e2e`, a Pages workflow deploy, backend tunnel health, and a live browser smoke against the public URL.

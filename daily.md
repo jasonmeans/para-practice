@@ -99,3 +99,34 @@ Validation completed:
 Next steps:
 
 - Reload the live local service with the updated build
+
+## 2026-04-18 - Public rollout
+
+Current focus:
+
+- Publish the site to GitHub Pages without manual post-setup work
+- Keep the bundled backend reachable from the public site
+- Verify the live URL, not just local builds
+
+Tasks completed:
+
+- Added cross-origin token auth and CORS support for the bundled backend
+- Added a local tunnel daemon that updates the Pages backend secret and re-runs the workflow when the public URL changes
+- Enabled GitHub Pages in workflow mode and published the site
+- Fixed the workflow order so e2e coverage no longer overwrites the Pages-safe asset paths
+- Removed the last inline theme-preference bootstrap so the site follows system settings only
+
+Validation completed:
+
+- Verified `npm run lint`
+- Verified `npm run test`
+- Verified `npm run build`
+- Verified `npm run verify:local-backend`
+- Verified `npm run test:e2e`
+- Verified the GitHub Pages deployment workflow completed successfully
+- Verified backend health through the active public tunnel
+
+Next steps:
+
+- Keep the local backend host machine online so the public bridge remains reachable
+- Replace the tunnel bridge with hosted Supabase later if a permanent backend is desired

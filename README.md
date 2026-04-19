@@ -25,6 +25,7 @@ The goal is to give one learner a steady, encouraging place to practice, review 
 - Account-backed pause and resume
 - Detailed results with explanations and recommended focus areas
 - Saved history through a ready-to-run local backend
+- GitHub Pages deployment wired to a public local-backend bridge
 - Score trend and section trend charts
 - Study insights for strongest sections, weakest sections, recurring errors, and momentum
 - JSON export and import for backup and restore
@@ -62,6 +63,7 @@ The goal is to give one learner a steady, encouraging place to practice, review 
 
 - By default, attempt history and active sessions live in [`~/.para-practice-local/store.json`](/Users/jasonmeans/.para-practice-local/store.json) through the bundled local backend.
 - When Supabase browser credentials are provided at build time, the app switches to Supabase Auth + Postgres instead.
+- When `VITE_LOCAL_API_BASE_URL` is provided at build time, GitHub Pages points at the same bundled backend over HTTPS.
 - The browser keeps only the auth session locally.
 - JSON export/import remains available for backup and restore.
 
@@ -89,15 +91,24 @@ The goal is to give one learner a steady, encouraging place to practice, review 
 
 The local backend listens on the same origin as the app and writes account data to [`~/.para-practice-local/store.json`](/Users/jasonmeans/.para-practice-local/store.json).
 
-## Hosted Supabase mode
+## Hosted internet mode
 
-If you want internet-hosted access through GitHub Pages, copy the env template:
+GitHub Pages can run in either of these hosted modes:
+
+- `VITE_LOCAL_API_BASE_URL`: connect the static Pages build to the bundled local backend through a public HTTPS tunnel
+- `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY`: switch the app to Supabase Auth + Postgres
+
+If you want to provide your own hosted configuration, copy the env template:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Then:
+Then either:
+
+1. fill in `VITE_LOCAL_API_BASE_URL` with your HTTPS backend URL
+
+or:
 
 1. create a Supabase project
 2. run the SQL in [`supabase/migrations/20260418_backend_sync.sql`](/Users/jasonmeans/code/personal/para-practice/supabase/migrations/20260418_backend_sync.sql)
@@ -130,6 +141,8 @@ The repository includes a GitHub Actions workflow at [`.github/workflows/deploy-
 
 The workflow automatically switches Vite into GitHub Pages base-path mode with `BUILD_TARGET=pages`.
 
+For this machine, the published site is available at [https://jasonmeans.github.io/para-practice/](https://jasonmeans.github.io/para-practice/). The local backend bridge is maintained by [`scripts/public-backend-daemon.mjs`](/Users/jasonmeans/code/personal/para-practice/scripts/public-backend-daemon.mjs), which updates the `VITE_LOCAL_API_BASE_URL` repository secret and re-runs the Pages workflow whenever the public tunnel URL changes.
+
 ### Manual GitHub setup
 
 In the repository settings on GitHub:
@@ -138,8 +151,9 @@ In the repository settings on GitHub:
 2. Open **Pages**
 3. Set **Source** to **GitHub Actions**
 
-In the repository **Secrets and variables** section, add:
+In the repository **Secrets and variables** section, add the hosted backend values you want the Pages build to use:
 
+- `VITE_LOCAL_API_BASE_URL`
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
 
