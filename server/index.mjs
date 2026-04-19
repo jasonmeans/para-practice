@@ -151,7 +151,10 @@ function applyCors(request, response) {
   }
 
   response.setHeader('Access-Control-Allow-Origin', origin)
-  response.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type')
+  response.setHeader(
+    'Access-Control-Allow-Headers',
+    'Authorization, Content-Type, bypass-tunnel-reminder'
+  )
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   response.setHeader('Access-Control-Max-Age', '600')
   response.setHeader('Vary', 'Origin')

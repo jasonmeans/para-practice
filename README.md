@@ -141,7 +141,7 @@ The repository includes a GitHub Actions workflow at [`.github/workflows/deploy-
 
 The workflow automatically switches Vite into GitHub Pages base-path mode with `BUILD_TARGET=pages`.
 
-For this machine, the published site is available at [https://jasonmeans.github.io/para-practice/](https://jasonmeans.github.io/para-practice/). The local backend bridge is maintained by [`scripts/public-backend-daemon.mjs`](/Users/jasonmeans/code/personal/para-practice/scripts/public-backend-daemon.mjs), which keeps a fixed `localtunnel` subdomain alive for the published Pages build.
+For this machine, the published site is available at [https://jasonmeans.github.io/para-practice/](https://jasonmeans.github.io/para-practice/). The local backend bridge is maintained by [`scripts/public-backend-daemon.mjs`](/Users/jasonmeans/code/personal/para-practice/scripts/public-backend-daemon.mjs), which keeps the current Cloudflare quick tunnel alive for the published Pages build.
 
 ### Manual GitHub setup
 

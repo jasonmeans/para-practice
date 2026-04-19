@@ -19,6 +19,7 @@ const localApiBaseUrl = resolveLocalApiBaseUrl(
   import.meta.env.VITE_LOCAL_API_BASE_URL
 )
 const localSessionTokenKey = 'para_practice_local_auth_token'
+const localTunnelBypassHeader = 'bypass-tunnel-reminder'
 
 interface LocalAuthPayload {
   session?: {
@@ -96,6 +97,10 @@ export async function localApiRequest<T>(
 
   if (sessionToken && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${sessionToken}`)
+  }
+
+  if (localApiBaseUrl.includes('.loca.lt')) {
+    headers.set(localTunnelBypassHeader, 'true')
   }
 
   const response = await fetch(`${localApiBaseUrl}${path}`, {

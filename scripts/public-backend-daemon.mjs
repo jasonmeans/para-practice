@@ -7,11 +7,8 @@ import { setTimeout as delay } from 'node:timers/promises'
 const stateDir = path.join(os.homedir(), '.para-practice-local')
 const stateFile = path.join(stateDir, 'public-backend.json')
 const backendPort = process.env.BACKEND_PORT ?? '3000'
-const publicBackendUrl =
-  process.env.PUBLIC_BACKEND_URL ?? 'https://para-practice-jasonmeans.loca.lt'
-const publicBackendSubdomain =
-  process.env.PUBLIC_BACKEND_SUBDOMAIN ?? 'para-practice-jasonmeans'
-const npxBinary = process.env.NPX_BIN ?? 'npx'
+const cloudflaredBinary =
+  process.env.CLOUDFLARED_BIN ?? '/opt/homebrew/opt/cloudflared/bin/cloudflared'
 
 function log(message) {
   console.log(`[public-backend] ${message}`)
@@ -30,32 +27,27 @@ function writeState(nextState) {
   writeFileSync(stateFile, JSON.stringify(nextState, null, 2))
 }
 
-function rememberPublicUrl() {
+function rememberPublicUrl(publicUrl) {
   writeState({
     ...readState(),
-    currentUrl: publicBackendUrl,
-    deployedUrl: publicBackendUrl,
+    currentUrl: publicUrl,
+    deployedUrl: publicUrl,
     updatedAt: new Date().toISOString(),
     deployedAt: new Date().toISOString(),
   })
 }
 
 async function runTunnelOnce() {
-  log(
-    `Starting localtunnel on localhost:${backendPort} as ${publicBackendSubdomain}`
-  )
-  rememberPublicUrl()
+  log(`Starting cloudflared quick tunnel for localhost:${backendPort}`)
 
   return new Promise((resolve) => {
     const child = spawn(
-      npxBinary,
+      cloudflaredBinary,
       [
-        '--yes',
-        'localtunnel@2.0.2',
-        '--port',
-        backendPort,
-        '--subdomain',
-        publicBackendSubdomain,
+        'tunnel',
+        '--url',
+        `http://127.0.0.1:${backendPort}`,
+        '--no-autoupdate',
       ],
       {
         env: process.env,
@@ -72,8 +64,10 @@ async function runTunnelOnce() {
 
       console.log(line)
 
-      if (line.includes('your url is:')) {
-        rememberPublicUrl()
+      const match = line.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/)
+
+      if (match) {
+        rememberPublicUrl(match[0])
       }
     }
 

@@ -170,7 +170,7 @@ Current focus:
 Tasks completed:
 
 - Confirmed the deployed Pages bundle was still pointing at an expired tunnel URL while the active backend had moved to a new public address
-- Replaced the rotating localhost.run bridge with a fixed localtunnel subdomain for the published site
+- Replaced the rotating localhost.run bridge with the currently running Cloudflare quick tunnel for the published site
 - Translated generic network fetch failures into a clearer saved-progress-service message for login and history loads
 - Added focused unit coverage for the public-bridge selection and error-message normalization
 
@@ -180,7 +180,7 @@ Validation completed:
 - Verified `npm run test`
 - Verified `npm run test:e2e`
 - Verified a Pages-targeted build
-- Verified the fixed public tunnel returns the expected CORS headers for GitHub Pages requests
+- Verified the current public tunnel returns the expected CORS headers for GitHub Pages requests
 
 Next steps:
 
