@@ -208,3 +208,34 @@ Validation completed:
 Next steps:
 
 - Monitor the deployed site after the `main` push completes
+
+## 2026-05-15 - Public login bridge recovery
+
+Current focus:
+
+- Restore sign-in on the deployed GitHub Pages site
+- Keep the active backend bridge configurable through the Pages workflow
+- Verify the public login path after deployment
+
+Tasks completed:
+
+- Confirmed the deployed bundle was pointing at an expired Cloudflare quick tunnel
+- Confirmed the local backend and current public tunnel were healthy
+- Updated the Pages bridge fallback to the active tunnel
+- Changed bridge selection so `VITE_LOCAL_API_BASE_URL` can override the fallback on GitHub Pages
+- Updated the GitHub secret for the active public backend and redeployed `main`
+
+Validation completed:
+
+- Verified `npm run lint`
+- Verified `npm run test`
+- Verified `npm run build`
+- Verified `npm run verify:local-backend`
+- Verified `npm run test:e2e`
+- Verified a Pages-targeted build contains the active tunnel URL
+- Verified GitHub Pages workflow run `25953020274` completed successfully
+- Verified live public sign-up/sign-in on `https://jasonmeans.github.io/para-practice/`
+
+Next steps:
+
+- Replace the quick-tunnel bridge with hosted Supabase when a permanent public backend is needed

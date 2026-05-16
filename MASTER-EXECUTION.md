@@ -134,4 +134,8 @@ Mitigation: Configure Vite base path intentionally and verify workflow output pa
 
 ## Risk: Backend setup friction
 
-Mitigation: Keep the backend surface small, ship a ready-to-run local backend for immediate use, retain documented Supabase setup for hosted deployments, and automate the Pages backend bridge so repo secret updates do not require manual redeploy steps.
+Mitigation: Keep the backend surface small, ship a ready-to-run local backend for immediate use, retain documented Supabase setup for hosted deployments, and keep the Pages backend bridge configurable through `VITE_LOCAL_API_BASE_URL` so tunnel rotation can be recovered without source edits.
+
+## Risk: Quick-tunnel bridge rotation breaks public login
+
+Mitigation: Treat Cloudflare quick tunnels as temporary public bridges, verify tunnel health and CORS before deploy, and prefer the GitHub secret override over hard-coded fallback URLs for Pages builds.

@@ -89,3 +89,12 @@ Subject: Insights topic focus rendering fix
 Decision or request: Fixed the learner insights summary so recommended topic focus items render topic labels instead of stringifying whole topic objects, and now only recommend topics with actual misses.  
 Status: Closed  
 Follow-up needed: Changed `src/lib/insights/analyze.ts` and `src/lib/insights/analyze.test.ts`; verified `npm run lint`, `npm run test`, and `npm run build` before shipping.
+
+## 2026-05-15 21:45 PT
+
+From: Data/Persistence Engineer, QA Engineer  
+To: Orchestrator, Deployment Engineer  
+Subject: Public login bridge recovery  
+Decision or request: Restored deployed login by repointing the Pages backend bridge from an expired Cloudflare quick tunnel to the active tunnel and making `VITE_LOCAL_API_BASE_URL` override the fallback bridge on GitHub Pages. Updated the GitHub secret to the active tunnel URL and redeployed `main`.  
+Status: Closed  
+Follow-up needed: Changed `src/lib/backend/publicBridge.ts` and `src/lib/backend/publicBridge.test.ts`; verified `npm run lint`, `npm run test`, `npm run build`, `npm run verify:local-backend`, `npm run test:e2e`, Pages-targeted build output, CI deploy run `25953020274`, current tunnel CORS health, and a live public sign-up/sign-in smoke test.
