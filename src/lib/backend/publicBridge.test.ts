@@ -27,8 +27,21 @@ describe('public bridge config', () => {
       },
     })
 
-    expect(resolveLocalApiBaseUrl('https://stale.example.com')).toBe(
-      'https://subscriptions-friendship-luxury-sees.trycloudflare.com'
+    expect(resolveLocalApiBaseUrl()).toBe(
+      'https://depend-sentences-visible-proxy.trycloudflare.com'
+    )
+  })
+
+  it('lets deploy configuration override the Pages bridge', () => {
+    vi.stubGlobal('window', {
+      location: {
+        host: 'jasonmeans.github.io',
+        pathname: '/para-practice/',
+      },
+    })
+
+    expect(resolveLocalApiBaseUrl('https://configured.example.com/')).toBe(
+      'https://configured.example.com'
     )
   })
 })
